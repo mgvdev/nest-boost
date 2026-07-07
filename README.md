@@ -99,6 +99,11 @@ manually:
 }
 ```
 
+The launcher is auto-detected at install: `bunx` when Bun's CLI is on `PATH`, otherwise
+`npx -y nest-boost mcp` (both honor the `#!/usr/bin/env bun` shebang). Force it with
+`--runner bunx|npx`. Either way, **Bun must be installed** — the MCP server imports your
+app's TypeScript and boots Nest, which needs a TS-capable runtime.
+
 ## Guidelines
 
 Guidelines are Markdown loaded up front. nest-boost composes them from what your project

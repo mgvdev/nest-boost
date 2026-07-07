@@ -1,12 +1,8 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-/** The MCP server entry every agent registers for nest-boost. */
+/** The key every agent registers the nest-boost MCP server under. */
 export const MCP_SERVER_KEY = "nest-boost";
-export const MCP_SERVER_ENTRY = {
-  command: "bunx",
-  args: ["nest-boost", "mcp"],
-};
 
 export interface McpConfigTarget {
   /** Project-relative JSON file to merge the server entry into. */
@@ -42,8 +38,11 @@ export interface Agent {
   /** Heuristic that marks the agent as already present in a project. */
   isPresent(projectRoot: string): boolean;
   mcp?: McpConfigTarget;
-  /** Shown as a next step when MCP is registered via a CLI rather than a file. */
-  mcpHint?: string;
+  /**
+   * Shown as a next step when MCP is registered via a CLI rather than a file.
+   * Receives the resolved launch command (e.g. "bunx nest-boost mcp").
+   */
+  mcpHint?: (command: string) => string;
   guidelines?: GuidelinesTarget;
   skills?: SkillsTarget;
 }
@@ -77,7 +76,7 @@ export const AGENTS: Agent[] = [
     label: "Codex",
     isPresent: (root) => has(root, ".codex", "AGENTS.md"),
     guidelines: { file: "AGENTS.md", mode: "block" },
-    mcpHint: "codex mcp add nest-boost -- bunx nest-boost mcp",
+    mcpHint: (command) => `codex mcp add nest-boost -- ${command}`,
   },
   {
     id: "gemini",

@@ -57,6 +57,7 @@ describe("auth strategy selection", () => {
       moduleExport: "AppModule",
       architecture: "standard",
       auth: "better-auth",
+      runner: "bunx",
     });
 
     const claude = readFileSync(join(dir, "CLAUDE.md"), "utf8");

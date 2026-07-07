@@ -14,6 +14,7 @@ Install options:
   --agents <a,b>         Preselect agents non-interactively (claude,cursor,codex,gemini,generic)
   --arch <style>         Architecture style (standard,cqrs,hexagonal)
   --auth <strategy>      Auth strategy (none,passport,better-auth)
+  --runner <bunx|npx>    MCP launcher for the generated config (default: auto-detect)
   --fetch-auth-skill     Fetch the official community skill for the auth strategy (e.g. Better Auth)
   --yes                  Accept defaults, skip prompts
 `;

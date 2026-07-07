@@ -23,7 +23,11 @@
   "scripts": {
     "dev": "bun run src/cli.ts",
     "test": "bun test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run typecheck && bun test"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "nestjs",

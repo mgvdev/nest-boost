@@ -7,6 +7,7 @@ import { DEFAULT_ARCHITECTURE } from "../install/architectures";
 import { authById, defaultAuthFor } from "../install/auth";
 import { fetchOfficialSkill } from "../install/fetch-skill";
 import { promptAgents, promptArchitecture, promptAuth, promptConfirm, promptEntryModule } from "../install/prompt";
+import { mcpCommandString, mcpServerEntry, resolveRunner, type Runner } from "../install/runner";
 import type { Selection } from "../install/selection";
 import { composeGuidelines, writeGuidelines } from "../install/writers/guidelines";
 import { writeMcpConfig } from "../install/writers/mcp-config";
@@ -18,6 +19,8 @@ export interface InstallOptions {
   moduleExport: string;
   architecture: string;
   auth: string;
+  /** Launcher for the MCP server entry (bunx or npx). */
+  runner: Runner;
 }
 
 export interface InstallSummary {
@@ -40,12 +43,15 @@ export function performInstall(
   const hints: string[] = [];
   const installedSkills = new Set<string>();
 
+  const mcpEntry = mcpServerEntry(options.runner);
+  const mcpCommand = mcpCommandString(options.runner);
+
   for (const id of options.agents) {
     const agent = agentById(id);
     if (!agent) continue;
 
-    if (agent.mcp) filesWritten.push(writeMcpConfig(projectRoot, agent.mcp));
-    if (agent.mcpHint) hints.push(agent.mcpHint);
+    if (agent.mcp) filesWritten.push(writeMcpConfig(projectRoot, agent.mcp, mcpEntry));
+    if (agent.mcpHint) hints.push(agent.mcpHint(mcpCommand));
     if (agent.guidelines) filesWritten.push(writeGuidelines(projectRoot, agent.guidelines, guidelines));
     if (agent.skills) {
       for (const name of copySkills(projectRoot, agent.skills, skills)) {
@@ -84,6 +90,7 @@ interface Flags {
   module?: string;
   arch?: string;
   auth?: string;
+  runner?: string;
   fetchAuthSkill: boolean;
 }
 
@@ -97,6 +104,7 @@ function parseFlags(args: string[]): Flags {
     else if (arg === "--module") flags.module = args[++i];
     else if (arg === "--arch" || arg === "--architecture") flags.arch = args[++i];
     else if (arg === "--auth") flags.auth = args[++i];
+    else if (arg === "--runner") flags.runner = args[++i];
     else if (arg === "--fetch-auth-skill") flags.fetchAuthSkill = true;
   }
   return flags;
@@ -128,12 +136,18 @@ export async function runInstall(args: string[]): Promise<void> {
   const presentDefaults = AGENTS.filter((a) => a.isPresent(projectRoot)).map((a) => a.id);
   const agents = flags.agents ?? (nonInteractive ? (presentDefaults.length ? presentDefaults : ["claude"]) : await promptAgents(presentDefaults));
 
-  const summary = performInstall(projectRoot, detection, { agents, entryModule, moduleExport, architecture, auth });
+  const runner = resolveRunner(flags.runner);
+  if (runner === "npx") {
+    log.warn("Bun CLI not detected — using `npx` to launch the MCP server. nest-boost still requires Bun to be installed to run.");
+  }
+
+  const summary = performInstall(projectRoot, detection, { agents, entryModule, moduleExport, architecture, auth, runner });
 
   note(
     [
       `Arch:    ${architecture}`,
       `Auth:    ${auth}`,
+      `Runner:  ${runner}`,
       `Agents:  ${summary.agents.join(", ")}`,
       `Files:   ${summary.filesWritten.join(", ")}`,
       summary.skills.length ? `Skills:  ${summary.skills.join(", ")}` : "",

@@ -35,6 +35,7 @@ describe("performInstall", () => {
       moduleExport: "AppModule",
       architecture: "standard",
       auth: "none",
+      runner: "bunx",
     });
 
     // MCP config
@@ -75,6 +76,7 @@ describe("performInstall", () => {
       moduleExport: "AppModule",
       architecture: "standard",
       auth: "none",
+      runner: "bunx",
     });
 
     const after = readFileSync(path, "utf8");

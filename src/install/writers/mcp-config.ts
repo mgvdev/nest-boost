@@ -1,13 +1,18 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { MCP_SERVER_ENTRY, MCP_SERVER_KEY, type McpConfigTarget } from "../agents/agent";
+import { MCP_SERVER_KEY, type McpConfigTarget } from "../agents/agent";
+import type { McpEntry } from "../runner";
 
 /**
  * Non-destructively merge the nest-boost MCP server entry into an agent's JSON
  * config file (`mcpServers.nest-boost`). Existing servers and unrelated keys are
  * preserved. Idempotent: re-running overwrites only our own entry.
  */
-export function writeMcpConfig(projectRoot: string, target: McpConfigTarget): string {
+export function writeMcpConfig(
+  projectRoot: string,
+  target: McpConfigTarget,
+  entry: McpEntry,
+): string {
   const path = join(projectRoot, target.file);
   mkdirSync(dirname(path), { recursive: true });
 
@@ -21,7 +26,7 @@ export function writeMcpConfig(projectRoot: string, target: McpConfigTarget): st
   }
 
   config.mcpServers ??= {};
-  config.mcpServers[MCP_SERVER_KEY] = { ...MCP_SERVER_ENTRY };
+  config.mcpServers[MCP_SERVER_KEY] = { command: entry.command, args: [...entry.args] };
 
   writeFileSync(path, JSON.stringify(config, null, 2) + "\n");
   return target.file;

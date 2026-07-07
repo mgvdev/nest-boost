@@ -34,6 +34,7 @@ const opts = {
   moduleExport: "AppModule",
   architecture: "standard",
   auth: "none",
+  runner: "bunx" as const,
 };
 
 describe("skill-builder generator", () => {

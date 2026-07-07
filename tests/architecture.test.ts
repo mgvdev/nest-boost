@@ -50,6 +50,7 @@ describe("architecture selection", () => {
       moduleExport: "AppModule",
       architecture: "cqrs",
       auth: "none",
+      runner: "bunx",
     });
 
     const claude = readFileSync(join(dir, "CLAUDE.md"), "utf8");
@@ -71,6 +72,7 @@ describe("architecture selection", () => {
       moduleExport: "AppModule",
       architecture: "hexagonal",
       auth: "none",
+      runner: "bunx",
     });
     expect(readFileSync(join(dir, "CLAUDE.md"), "utf8")).toContain("ports & adapters");
     expect(existsSync(join(dir, ".claude/skills/architecture-hexagonal/SKILL.md"))).toBe(true);
