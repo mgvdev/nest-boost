@@ -1,0 +1,20 @@
+{
+  "name": "sample-app",
+  "version": "1.2.3",
+  "private": true,
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/config": "^3.2.0",
+    "@nestjs/typeorm": "^10.0.0",
+    "typeorm": "^0.3.20",
+    "class-validator": "^0.14.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.0"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^11.0.0",
+    "typescript": "^5.4.0"
+  }
+}
