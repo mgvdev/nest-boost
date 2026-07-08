@@ -36,6 +36,11 @@ describe("evaluate tool", () => {
     expect(res.availableProviders).toBeGreaterThan(0);
   });
 
+  test("resolves a provider by string name", async () => {
+    const res = JSON.parse(await evaluateTool.run({ code: "$('MathService').add(1, 2)" }, ctx));
+    expect(res.result).toBe(3);
+  });
+
   test("supports statements ending in return", async () => {
     const res = JSON.parse(
       await evaluateTool.run({ code: "const s = $(MathService); return s.add(2, 40);" }, ctx),
@@ -53,14 +58,29 @@ describe("evaluate tool", () => {
     expect(skillsForDetection(detect(FIXTURE))).toContain("using-evaluate");
   });
 
-  test("is disabled unless enabled in config", async () => {
+  test("is disabled only when explicitly turned off", async () => {
     const dir = mkdtempSync(join(tmpdir(), "nest-boost-noeval-"));
-    writeFileSync(join(dir, "nest-boost.json"), JSON.stringify({ agents: [] }));
+    writeFileSync(
+      join(dir, "nest-boost.json"),
+      JSON.stringify({ agents: [], evaluate: { enabled: false } }),
+    );
     try {
       const res = JSON.parse(await evaluateTool.run({ code: "1+1" }, { projectRoot: dir }));
       expect(res.error).toContain("disabled");
     } finally {
       rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("is blocked when NODE_ENV=production", async () => {
+    const prev = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    try {
+      const res = JSON.parse(await evaluateTool.run({ code: "1+1" }, ctx));
+      expect(res.error).toContain("production");
+    } finally {
+      if (prev === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = prev;
     }
   });
 });

@@ -24,7 +24,7 @@ export interface InstallOptions {
   auth: string;
   /** Test layout id; defaults to "colocated" when omitted. */
   testLayout?: string;
-  /** Enable the opt-in `evaluate` tool (arbitrary code in the booted app). */
+  /** The dev-only `evaluate` tool: enabled by default; pass false to disable. */
   evaluateEnabled?: boolean;
   /** Launcher for the MCP server entry (bunx or npx). */
   runner: Runner;
@@ -80,7 +80,7 @@ export function performInstall(
     architecture: options.architecture,
     auth: options.auth,
     testLayout,
-    ...(options.evaluateEnabled ? { evaluate: { enabled: true } } : {}),
+    evaluate: { enabled: options.evaluateEnabled !== false },
   };
   saveConfig(projectRoot, config);
   filesWritten.push("nest-boost.json");
@@ -103,12 +103,12 @@ interface Flags {
   testLayout?: string;
   runner?: string;
   defaultProject?: string;
-  enableEvaluate: boolean;
+  disableEvaluate: boolean;
   fetchAuthSkill: boolean;
 }
 
 function parseFlags(args: string[]): Flags {
-  const flags: Flags = { yes: false, enableEvaluate: false, fetchAuthSkill: false };
+  const flags: Flags = { yes: false, disableEvaluate: false, fetchAuthSkill: false };
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     if (arg === "--yes" || arg === "-y") flags.yes = true;
@@ -120,7 +120,7 @@ function parseFlags(args: string[]): Flags {
     else if (arg === "--test-layout") flags.testLayout = args[++i];
     else if (arg === "--runner") flags.runner = args[++i];
     else if (arg === "--default-project") flags.defaultProject = args[++i];
-    else if (arg === "--enable-evaluate") flags.enableEvaluate = true;
+    else if (arg === "--disable-evaluate") flags.disableEvaluate = true;
     else if (arg === "--fetch-auth-skill") flags.fetchAuthSkill = true;
   }
   return flags;
@@ -201,7 +201,7 @@ export async function runInstall(args: string[]): Promise<void> {
 
   const runner = resolveRunner(flags.runner);
 
-  const summary = performInstall(projectRoot, detection, { agents, projects, defaultProject, architecture, auth, testLayout, evaluateEnabled: flags.enableEvaluate, runner });
+  const summary = performInstall(projectRoot, detection, { agents, projects, defaultProject, architecture, auth, testLayout, evaluateEnabled: !flags.disableEvaluate, runner });
 
   const projectsLine = detection.monorepo
     ? `Projects: ${projects.map((p) => (p.name === defaultProject ? `${p.name}*` : p.name)).join(", ")}  (*=default)`
@@ -243,9 +243,9 @@ export async function runInstall(args: string[]): Promise<void> {
       "  .mcp.json, CLAUDE.md, AGENTS.md, .cursor/, .gemini/, nest-boost.json\n" +
       "Commit `.nest-boost/skills/` — it's your custom-skill knowledge base (source of truth).\n" +
       "Add a skill for any library with the `skill-builder` skill.\n" +
-      (flags.enableEvaluate
-        ? "The `evaluate` tool is ENABLED — it boots your app for real and runs arbitrary code."
-        : "Enable the `evaluate` REPL tool (arbitrary code in the booted app) with --enable-evaluate."),
+      (flags.disableEvaluate
+        ? "The `evaluate` tool is DISABLED (--disable-evaluate)."
+        : "The `evaluate` REPL tool is enabled (development-only; boots the app + runs arbitrary code). Disable with --disable-evaluate."),
     "Tip",
   );
 

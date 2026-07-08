@@ -20,10 +20,16 @@ answer the question — `evaluate` is heavier and unguarded (see Safety).
 
 ## How it works
 - `get(Token)` / `$(Token)` resolve a provider from the DI container.
-- **Every provider/controller class is in scope by name** — reference it directly:
-  `$(BillingService)`, `new CreateUserDto()`, etc.
+- **Every provider/controller class is already in scope by name** — reference it directly:
+  `$(BillingService)`. You can also pass a **string**: `$('BillingService')`.
 - `await` is supported. Pass a single expression, or statements ending in `return`.
 - In a **monorepo**, pass `project` to choose which app to boot (defaults to the workspace default).
+
+### Do NOT `import` providers
+Don't `await import('.../billing.service')` to get a class — a manually imported class is a
+*different reference* than the one Nest registered, so the container can't match it
+(`this provider does not exist in the current context`). The classes are already injected as
+globals; just use `$(BillingService)` or `$('BillingService')`.
 
 ```jsonc
 evaluate { "code": "await $(UsersService).findOne(1)" }
@@ -39,10 +45,11 @@ evaluate { "code": "$(CatsService).findAll().length", "project": "api" }
 - Never run destructive code against a production database.
 - Results are serialized with a depth/row cap — large objects are truncated.
 
-## If it's disabled
-The tool is **opt-in**. If it returns a "disabled" error, tell the user to enable it:
-`npx nest-boost install --enable-evaluate`, or add `"evaluate": { "enabled": true }` to
-`nest-boost.json`. Don't try to work around it.
+## Development-only
+This tool is **enabled by default** but is **blocked when `NODE_ENV=production`** — it must
+never touch a production environment. If it returns a "disabled" error, the project set
+`"evaluate": { "enabled": false }` in `nest-boost.json` (or ran `--disable-evaluate`); ask the
+user to re-enable it rather than working around it.
 
 ## Ground yourself
 Use `module_graph` first to learn which providers exist and their real dependencies, so you

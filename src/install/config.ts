@@ -43,6 +43,7 @@ export const DEFAULT_CONFIG: NestBoostConfig = {
   architecture: "standard",
   auth: "none",
   testLayout: "colocated",
+  evaluate: { enabled: true },
 };
 
 export function configPath(projectRoot: string): string {

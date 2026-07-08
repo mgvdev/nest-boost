@@ -29,25 +29,38 @@ export async function runEvaluate(
   const values = [...classes.values()];
 
   const body = /\breturn\b/.test(code) ? code : `return (\n${code}\n);`;
-  // Assign to a marker so Bun's transpiler doesn't tree-shake the (side-effect-free)
-  // arrow expression away.
+  // Assign to a marker so the transpiler/eval keeps the (side-effect-free) arrow.
   const marker = "__nestBoostEvalFn";
   const source = `globalThis.${marker} = (async (get, $, ${names.join(", ")}) => {\n${body}\n});`;
 
-  let js: string;
-  try {
-    js = new Bun.Transpiler({ loader: "ts" }).transformSync(source);
-  } catch (err) {
-    throw new Error(`Could not parse the code: ${err instanceof Error ? err.message : String(err)}`);
-  }
+  const js = await transpile(source);
 
   // eslint-disable-next-line no-eval
   (0, eval)(js);
   const fn = (globalThis as any)[marker] as (...args: unknown[]) => Promise<unknown>;
   delete (globalThis as any)[marker];
-  const get = (token: unknown) => app.get(token as any, { strict: false });
 
-  const result = await withTimeout(fn(get, get, ...values), timeoutMs);
+  // Resolve a provider tolerantly: by class, by string name, and — crucially —
+  // by falling back to the registered class when a *different* reference of the
+  // same class is passed (e.g. from a manual `await import(...)`), which the DI
+  // container can't match by identity.
+  const resolve = (token: unknown): unknown => {
+    if (typeof token === "string") {
+      return app.get((classes.get(token) ?? token) as any, { strict: false });
+    }
+    if (typeof token === "function" && token.name) {
+      try {
+        return app.get(token as any, { strict: false });
+      } catch (err) {
+        const registered = classes.get(token.name);
+        if (registered) return app.get(registered as any, { strict: false });
+        throw err;
+      }
+    }
+    return app.get(token as any, { strict: false });
+  };
+
+  const result = await withTimeout(fn(resolve, resolve, ...values), timeoutMs);
   return { result: safeSerialize(result), globals: names };
 }
 
@@ -64,6 +77,24 @@ function collectClasses(modules: ModulesContainer): Map<string, unknown> {
     }
   }
   return out;
+}
+
+/**
+ * Transpile TypeScript to JavaScript using the standard `typescript` compiler
+ * (Node-friendly, no Bun-specific API), resolved from the host project. If it's
+ * not installed, fall back to running the source as-is — plain-JS snippets
+ * (the common case for REPL one-liners) need no transpile.
+ */
+async function transpile(source: string): Promise<string> {
+  try {
+    const spec = "typescript"; // indirection: optional, resolved from the host project
+    const ts: any = await import(spec);
+    return ts.transpileModule(source, {
+      compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
+    }).outputText;
+  } catch {
+    return source;
+  }
 }
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
