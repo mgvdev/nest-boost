@@ -33,12 +33,23 @@ describe("evaluate tool", () => {
       { id: 1, name: "Ada" },
       { id: 2, name: "Alan" },
     ]);
-    expect(res.availableProviders).toBeGreaterThan(0);
+    expect(res.providers).toContain("MathService");
   });
 
   test("resolves a provider by string name", async () => {
     const res = JSON.parse(await evaluateTool.run({ code: "$('MathService').add(1, 2)" }, ctx));
     expect(res.result).toBe(3);
+  });
+
+  test("resolves a custom-token (value) provider by string name", async () => {
+    const res = JSON.parse(await evaluateTool.run({ code: "$('APP_CONFIG').version" }, ctx));
+    expect(res.result).toBe("1.2.3");
+  });
+
+  test("lists available providers when a lookup fails", async () => {
+    const res = JSON.parse(await evaluateTool.run({ code: "$('NopeService').x()" }, ctx));
+    expect(res.error).toBeTruthy();
+    expect(res.availableProviders).toContain("MathService");
   });
 
   test("supports statements ending in return", async () => {

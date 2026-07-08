@@ -1,6 +1,6 @@
 import { loadConfig } from "../../install/config";
 import { bootContext } from "../evaluate/boot-full";
-import { runEvaluate } from "../evaluate/run";
+import { listProviders, runEvaluate } from "../evaluate/run";
 import { json, type McpTool } from "./types";
 
 export const evaluateTool: McpTool = {
@@ -52,10 +52,14 @@ export const evaluateTool: McpTool = {
 
     const timeoutMs = typeof args.timeoutMs === "number" ? args.timeoutMs : 5000;
     try {
-      const { result, globals } = await runEvaluate(boot.app, boot.modules, code, timeoutMs);
-      return json({ project: boot.project, result, availableProviders: globals.length });
+      const { result, providers } = await runEvaluate(boot.app, boot.modules, code, timeoutMs);
+      return json({ project: boot.project, result, providers });
     } catch (err) {
-      return json({ error: err instanceof Error ? err.message : String(err) });
+      // Surface the resolvable providers so a failed lookup is easy to correct.
+      return json({
+        error: err instanceof Error ? err.message : String(err),
+        availableProviders: listProviders(boot.modules),
+      });
     }
   },
 };

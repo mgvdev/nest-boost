@@ -5,18 +5,37 @@ import { safeSerialize } from "./serialize";
 const INTERNAL_MODULES = new Set(["InternalCoreModule"]);
 const IDENT = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
+// Identifiers that pass IDENT but are illegal as function parameter names — a
+// provider so named must not be injected as a global (it would throw at build).
+const RESERVED = new Set([
+  "await", "break", "case", "catch", "class", "const", "continue", "debugger", "default",
+  "delete", "do", "else", "enum", "export", "extends", "false", "finally", "for", "function",
+  "if", "import", "in", "instanceof", "new", "null", "return", "super", "switch", "this",
+  "throw", "true", "try", "typeof", "var", "void", "while", "with", "yield", "let", "static",
+  "implements", "interface", "package", "private", "protected", "public", "arguments", "eval",
+  "get", "$",
+]);
+
 export interface EvaluateOutcome {
   result: unknown;
-  globals: string[];
+  providers: string[];
+}
+
+interface Registry {
+  /** name → provider/controller class (constructor). */
+  classes: Map<string, unknown>;
+  /** name → already-instantiated provider (from the container). */
+  instances: Map<string, unknown>;
 }
 
 /**
  * Evaluate a snippet against a fully-booted app. Exposes `get`/`$` (resolve a
- * provider) and every user provider/controller class by name (like the NestJS
- * REPL), transpiles TypeScript, awaits the result, and serializes it safely.
+ * provider by class, by string name, or the current instance) and every user
+ * provider/controller class by name (like the NestJS REPL). Transpiles
+ * TypeScript, awaits the result, and serializes it safely.
  *
- * This runs ARBITRARY code in the real application — it is intentionally
- * unguarded (unlike db_query) and gated behind an opt-in config.
+ * This runs ARBITRARY code in the real application — intentionally unguarded
+ * (unlike db_query), development-only, and gated behind config.
  */
 export async function runEvaluate(
   app: INestApplicationContext,
@@ -24,9 +43,11 @@ export async function runEvaluate(
   code: string,
   timeoutMs = 5000,
 ): Promise<EvaluateOutcome> {
-  const classes = collectClasses(modules);
-  const names = [...classes.keys()];
-  const values = [...classes.values()];
+  const registry = collect(modules);
+  // Inject only globals whose name is a legal, non-reserved identifier so the
+  // function is always constructible even in large, oddly-named apps.
+  const names = [...registry.classes.keys()].filter((n) => !RESERVED.has(n));
+  const values = names.map((n) => registry.classes.get(n));
 
   const body = /\breturn\b/.test(code) ? code : `return (\n${code}\n);`;
   // Assign to a marker so the transpiler/eval keeps the (side-effect-free) arrow.
@@ -40,43 +61,60 @@ export async function runEvaluate(
   const fn = (globalThis as any)[marker] as (...args: unknown[]) => Promise<unknown>;
   delete (globalThis as any)[marker];
 
-  // Resolve a provider tolerantly: by class, by string name, and — crucially —
-  // by falling back to the registered class when a *different* reference of the
-  // same class is passed (e.g. from a manual `await import(...)`), which the DI
-  // container can't match by identity.
-  const resolve = (token: unknown): unknown => {
-    if (typeof token === "string") {
-      return app.get((classes.get(token) ?? token) as any, { strict: false });
-    }
-    if (typeof token === "function" && token.name) {
-      try {
-        return app.get(token as any, { strict: false });
-      } catch (err) {
-        const registered = classes.get(token.name);
-        if (registered) return app.get(registered as any, { strict: false });
-        throw err;
-      }
+  const resolve = makeResolve(app, registry);
+  const result = await withTimeout(fn(resolve, resolve, ...values), timeoutMs);
+  return { result: safeSerialize(result), providers: [...registry.classes.keys()] };
+}
+
+/**
+ * Resolve a provider tolerantly, in order of robustness:
+ * 1. the container's actual instance for that name (works for custom `provide`
+ *    tokens and value/factory providers, and sidesteps DI identity mismatches
+ *    when a *different* class reference is passed — e.g. from `await import`);
+ * 2. `app.get` on the registered class for that name;
+ * 3. `app.get` on the token as given.
+ */
+function makeResolve(app: INestApplicationContext, registry: Registry) {
+  return (token: unknown): unknown => {
+    const name =
+      typeof token === "string" ? token : typeof token === "function" ? (token as Function).name : undefined;
+
+    if (name) {
+      if (registry.instances.has(name)) return registry.instances.get(name);
+      const cls = registry.classes.get(name);
+      if (cls) return app.get(cls as any, { strict: false });
     }
     return app.get(token as any, { strict: false });
   };
-
-  const result = await withTimeout(fn(resolve, resolve, ...values), timeoutMs);
-  return { result: safeSerialize(result), globals: names };
 }
 
-/** Every user provider/controller class, keyed by its (valid-identifier) name. */
-function collectClasses(modules: ModulesContainer): Map<string, unknown> {
-  const out = new Map<string, unknown>();
+/** Names of every resolvable provider/controller (for `$('Name')` / debugging). */
+export function listProviders(modules: ModulesContainer): string[] {
+  return [...collect(modules).classes.keys()];
+}
+
+/** Index every user provider/controller by name → class and → live instance. */
+function collect(modules: ModulesContainer): Registry {
+  const classes = new Map<string, unknown>();
+  const instances = new Map<string, unknown>();
+
   for (const mod of modules.values()) {
     if (!mod.metatype || INTERNAL_MODULES.has(mod.metatype.name)) continue;
     for (const wrapper of [...mod.providers.values(), ...mod.controllers.values()]) {
       const cls = wrapper.metatype as (new (...a: any[]) => unknown) | undefined;
-      if (typeof cls === "function" && cls.name && IDENT.test(cls.name) && !out.has(cls.name)) {
-        out.set(cls.name, cls);
+      const name = (typeof cls === "function" && cls.name) || wrapper.name;
+      if (typeof name !== "string" || !IDENT.test(name)) continue;
+
+      if (typeof cls === "function" && cls.name && !classes.has(cls.name)) {
+        classes.set(cls.name, cls);
+      }
+      // Prefer the concrete instance the container already built.
+      if (wrapper.instance !== undefined && wrapper.instance !== null && !instances.has(name)) {
+        instances.set(name, wrapper.instance);
       }
     }
   }
-  return out;
+  return { classes, instances };
 }
 
 /**
