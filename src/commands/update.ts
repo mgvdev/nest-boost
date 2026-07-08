@@ -20,7 +20,7 @@ export async function runUpdate(_args: string[]): Promise<void> {
   }
 
   const detection = detect(projectRoot);
-  const selection = { architecture: config.architecture, auth: config.auth };
+  const selection = { architecture: config.architecture, auth: config.auth, testLayout: config.testLayout };
   const guidelines = composeGuidelines(detection, selection);
   const skills = resolveSkills(projectRoot, detection, selection);
   const written: string[] = [];

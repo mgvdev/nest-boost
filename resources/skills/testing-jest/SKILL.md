@@ -39,6 +39,8 @@ await app.close();
 - Reset mocks between tests (`afterEach(() => jest.clearAllMocks())`).
 - Run with `bun test`, `jest`, or `nest`'s configured test script.
 
+- Place tests per the project's **test-layout** convention (see these guidelines).
+
 ## Ground yourself
 Use the `nest-boost` `module_graph` tool to see a provider's real dependencies before
 deciding what to mock.

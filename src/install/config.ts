@@ -26,6 +26,8 @@ export interface NestBoostConfig {
   architecture: string;
   /** Chosen auth strategy (none, passport, better-auth). */
   auth: string;
+  /** Where test files live (colocated, colocated-subfolder, central). */
+  testLayout: string;
   /** Optional database connection for the schema/query MCP tools. */
   database?: { url?: string };
 }
@@ -38,6 +40,7 @@ export const DEFAULT_CONFIG: NestBoostConfig = {
   agents: [],
   architecture: "standard",
   auth: "none",
+  testLayout: "colocated",
 };
 
 export function configPath(projectRoot: string): string {
@@ -75,6 +78,7 @@ function migrate(parsed: Record<string, any>): NestBoostConfig {
     agents: parsed.agents ?? [],
     architecture: parsed.architecture ?? "standard",
     auth: parsed.auth ?? "none",
+    testLayout: parsed.testLayout ?? "colocated",
     ...(parsed.database ? { database: parsed.database } : {}),
   };
 

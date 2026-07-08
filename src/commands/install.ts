@@ -6,7 +6,8 @@ import { agentById, AGENTS, type Agent } from "../install/agents/agent";
 import { DEFAULT_ARCHITECTURE } from "../install/architectures";
 import { authById, defaultAuthFor } from "../install/auth";
 import { fetchOfficialSkill } from "../install/fetch-skill";
-import { promptAgents, promptArchitecture, promptAuth, promptConfirm, promptDefaultProject, promptEntryModule } from "../install/prompt";
+import { promptAgents, promptArchitecture, promptAuth, promptConfirm, promptDefaultProject, promptEntryModule, promptTestLayout } from "../install/prompt";
+import { DEFAULT_TEST_LAYOUT } from "../install/test-layout";
 import { mcpCommandString, mcpServerEntry, resolveRunner, type Runner } from "../install/runner";
 import type { Selection } from "../install/selection";
 import { composeGuidelines, writeGuidelines } from "../install/writers/guidelines";
@@ -19,6 +20,8 @@ export interface InstallOptions {
   defaultProject: string;
   architecture: string;
   auth: string;
+  /** Test layout id; defaults to "colocated" when omitted. */
+  testLayout?: string;
   /** Launcher for the MCP server entry (bunx or npx). */
   runner: Runner;
 }
@@ -36,7 +39,8 @@ export function performInstall(
   detection: Detection,
   options: InstallOptions,
 ): InstallSummary {
-  const selection: Selection = { architecture: options.architecture, auth: options.auth };
+  const testLayout = options.testLayout ?? DEFAULT_TEST_LAYOUT;
+  const selection: Selection = { architecture: options.architecture, auth: options.auth, testLayout };
   const guidelines = composeGuidelines(detection, selection);
   const skills = resolveSkills(projectRoot, detection, selection);
   const filesWritten: string[] = [];
@@ -71,6 +75,7 @@ export function performInstall(
     agents: options.agents,
     architecture: options.architecture,
     auth: options.auth,
+    testLayout,
   };
   saveConfig(projectRoot, config);
   filesWritten.push("nest-boost.json");
@@ -90,6 +95,7 @@ interface Flags {
   module?: string;
   arch?: string;
   auth?: string;
+  testLayout?: string;
   runner?: string;
   defaultProject?: string;
   fetchAuthSkill: boolean;
@@ -105,6 +111,7 @@ function parseFlags(args: string[]): Flags {
     else if (arg === "--module") flags.module = args[++i];
     else if (arg === "--arch" || arg === "--architecture") flags.arch = args[++i];
     else if (arg === "--auth") flags.auth = args[++i];
+    else if (arg === "--test-layout") flags.testLayout = args[++i];
     else if (arg === "--runner") flags.runner = args[++i];
     else if (arg === "--default-project") flags.defaultProject = args[++i];
     else if (arg === "--fetch-auth-skill") flags.fetchAuthSkill = true;
@@ -179,6 +186,8 @@ export async function runInstall(args: string[]): Promise<void> {
   const authDefault = defaultAuthFor(detection);
   const auth = flags.auth ?? (nonInteractive ? authDefault : await promptAuth(authDefault));
 
+  const testLayout = flags.testLayout ?? (nonInteractive ? DEFAULT_TEST_LAYOUT : await promptTestLayout(DEFAULT_TEST_LAYOUT));
+
   const presentDefaults = AGENTS.filter((a) => a.isPresent(projectRoot)).map((a) => a.id);
   const agents = flags.agents ?? (nonInteractive ? (presentDefaults.length ? presentDefaults : ["claude"]) : await promptAgents(presentDefaults));
 
@@ -187,7 +196,7 @@ export async function runInstall(args: string[]): Promise<void> {
     log.warn("Bun CLI not detected — using `npx` to launch the MCP server. nest-boost still requires Bun to be installed to run.");
   }
 
-  const summary = performInstall(projectRoot, detection, { agents, projects, defaultProject, architecture, auth, runner });
+  const summary = performInstall(projectRoot, detection, { agents, projects, defaultProject, architecture, auth, testLayout, runner });
 
   const projectsLine = detection.monorepo
     ? `Projects: ${projects.map((p) => (p.name === defaultProject ? `${p.name}*` : p.name)).join(", ")}  (*=default)`
@@ -197,6 +206,7 @@ export async function runInstall(args: string[]): Promise<void> {
       projectsLine,
       `Arch:    ${architecture}`,
       `Auth:    ${auth}`,
+      `Tests:   ${testLayout}`,
       `Runner:  ${runner}`,
       `Agents:  ${summary.agents.join(", ")}`,
       `Files:   ${summary.filesWritten.join(", ")}`,

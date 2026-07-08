@@ -56,6 +56,7 @@ bunx nest-boost install
 
 - **Architecture style** — Standard layered · CQRS · Hexagonal
 - **Auth strategy** — Passport · Better Auth · none *(defaulted from your dependencies)*
+- **Test layout** — colocated · `__tests__/` · central `test/` (unit + feature)
 - **Agents** — Claude Code · Cursor · Codex · Gemini CLI · generic
 
 …then writes the MCP configuration, composes the guidelines, and installs the matching
@@ -128,7 +129,8 @@ context lean. nest-boost installs:
 
 - **Baseline** — `nestjs-development`, `nestjs-docs` (authoritative lookups against the
   [official NestJS docs](https://github.com/nestjs/docs.nestjs.com) on GitHub),
-  `testing-jest`
+  `testing-jest`, `suites-testing` (fast isolated unit tests with
+  [Suites](https://docs.nestjs.com/recipes/suites), when detected)
 - **Package-gated** — ORMs/ODMs (`typeorm-development`, `prisma-development`, `sequelize-development`, `mikro-orm-development`, `mongoose-development`), plus `graphql-development`, `orpc-development`, … (only when detected)
 - **Architecture** — `architecture-standard` / `-cqrs` / `-hexagonal`
 - **Auth** — `auth-passport` / `auth-better-auth`
@@ -220,6 +222,7 @@ Adding another agent is a single object in `src/install/agents/agent.ts`.
   "agents": ["claude"],
   "architecture": "hexagonal",
   "auth": "better-auth",
+  "testLayout": "central",
   "database": { "url": "postgres://user:pass@localhost:5432/app" }
 }
 ```
@@ -238,6 +241,7 @@ install options:
   --agents <a,b>        Preselect agents (claude,cursor,codex,gemini,generic)
   --arch <style>        Architecture style (standard,cqrs,hexagonal)
   --auth <strategy>     Auth strategy (none,passport,better-auth)
+  --test-layout <id>    Test layout (colocated,colocated-subfolder,central)
   --runner <bunx|npx>   MCP launcher for the generated config (default: auto-detect)
   --default-project <n> Monorepo: the app the MCP boots by default
   --fetch-auth-skill    Fetch the official community skill for the auth strategy

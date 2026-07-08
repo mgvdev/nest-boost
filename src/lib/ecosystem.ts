@@ -114,4 +114,10 @@ export const ECOSYSTEM: EcosystemEntry[] = [
     guideline: "testing.md",
     skill: "testing-jest",
   },
+  {
+    id: "suites",
+    label: "Suites (unit testing)",
+    match: ["@suites/unit", "@suites/di.nestjs"],
+    skill: "suites-testing",
+  },
 ];

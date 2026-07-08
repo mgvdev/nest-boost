@@ -4,4 +4,6 @@ export interface Selection {
   architecture?: string;
   /** Auth strategy id (none, passport, better-auth). */
   auth?: string;
+  /** Test layout id (colocated, colocated-subfolder, central). */
+  testLayout?: string;
 }

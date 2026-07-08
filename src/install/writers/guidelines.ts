@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { guidelinesDir } from "../../lib/resources";
 import { architectureById } from "../architectures";
 import { authById } from "../auth";
+import { testLayoutById } from "../test-layout";
 import type { Detection } from "../detect";
 import type { Selection } from "../selection";
 import type { GuidelinesTarget } from "../agents/agent";
@@ -55,6 +56,12 @@ export function composeGuidelines(detection: Detection, selection: Selection = {
   const auth = selection.auth ? authById(selection.auth) : undefined;
   if (auth?.guideline) {
     const body = readGuideline(auth.guideline);
+    if (body) sections.push(body);
+  }
+
+  const layout = selection.testLayout ? testLayoutById(selection.testLayout) : undefined;
+  if (layout) {
+    const body = readGuideline(layout.guideline);
     if (body) sections.push(body);
   }
 
