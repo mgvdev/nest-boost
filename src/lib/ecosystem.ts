@@ -58,6 +58,18 @@ export const ECOSYSTEM: EcosystemEntry[] = [
     skill: "typeorm-development",
   },
   {
+    id: "mikro-orm",
+    label: "MikroORM",
+    match: ["@mikro-orm/nestjs", "@mikro-orm/core"],
+    skill: "mikro-orm-development",
+  },
+  {
+    id: "sequelize",
+    label: "Sequelize",
+    match: ["@nestjs/sequelize", "sequelize"],
+    skill: "sequelize-development",
+  },
+  {
     id: "mongoose",
     label: "Mongoose",
     match: ["@nestjs/mongoose", "mongoose"],
@@ -68,6 +80,7 @@ export const ECOSYSTEM: EcosystemEntry[] = [
     label: "Prisma",
     match: ["prisma", "@prisma/client"],
     guideline: "prisma.md",
+    skill: "prisma-development",
   },
   {
     id: "passport",

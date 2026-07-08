@@ -127,7 +127,7 @@ context lean. nest-boost installs:
 - **Baseline** — `nestjs-development`, `nestjs-docs` (authoritative lookups against the
   [official NestJS docs](https://github.com/nestjs/docs.nestjs.com) on GitHub),
   `testing-jest`
-- **Package-gated** — e.g. `typeorm-development`, `graphql-development`, `orpc-development` (only when detected)
+- **Package-gated** — ORMs (`typeorm-development`, `prisma-development`, `sequelize-development`, `mikro-orm-development`), plus `graphql-development`, `orpc-development`, … (only when detected)
 - **Architecture** — `architecture-standard` / `-cqrs` / `-hexagonal`
 - **Auth** — `auth-passport` / `auth-better-auth`
 - **`skill-builder`** — see below
