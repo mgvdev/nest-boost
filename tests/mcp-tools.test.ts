@@ -43,7 +43,15 @@ describe("list_routes tool", () => {
 
     const health = routes.find((r: any) => r.path === "/health");
     expect(health.method).toBe("GET");
-    expect(health.guards).toEqual([]);
+    expect(health.guards).toBeUndefined(); // empty arrays are omitted to save tokens
+  });
+
+  test("text format is compact and one line per route", async () => {
+    const text = await routesTool.run({ format: "text" }, ctx);
+    expect(text).toContain("GET");
+    expect(text).toContain("/cats  →  CatsController.findAll");
+    expect(text).toContain("guards:RolesGuard");
+    expect(text.trim().startsWith("{")).toBe(false); // not JSON
   });
 
   test("filters by method", async () => {

@@ -13,6 +13,18 @@ const scanner = new MetadataScanner();
 /** NestJS registers this synthetic module internally; never user-facing. */
 const INTERNAL_MODULES = new Set(["InternalCoreModule"]);
 
+/** Framework providers Nest injects into every module — noise in the graph. */
+const INTERNAL_PROVIDERS = new Set([
+  "ModuleRef",
+  "ApplicationConfig",
+  "Reflector",
+  "HttpAdapterHost",
+  "ExternalContextCreator",
+  "ModulesContainer",
+  "SerializedGraph",
+  "LazyModuleLoader",
+]);
+
 export interface ProviderInfo {
   name: string;
   scope: "default" | "request" | "transient";
@@ -70,8 +82,8 @@ export function collectModules(modules: ModulesContainer): ModuleInfo[] {
     const providers: ProviderInfo[] = [];
     for (const [token, wrapper] of mod.providers) {
       const name = wrapper.name ?? tokenName(token);
-      // Skip the module class itself, which Nest registers as a provider.
-      if (name === mod.metatype!.name) continue;
+      // Skip the module class itself and Nest's per-module framework providers.
+      if (name === mod.metatype!.name || INTERNAL_PROVIDERS.has(name)) continue;
       providers.push({
         name,
         scope: scopeLabel((wrapper as any).scope),

@@ -1,6 +1,6 @@
 import { bootApp } from "../boot";
-import { collectRoutes } from "../introspect";
-import { json, type McpTool } from "./types";
+import { collectRoutes, type RouteInfo } from "../introspect";
+import { compact, json, type McpTool } from "./types";
 
 export const routesTool: McpTool = {
   name: "list_routes",
@@ -24,6 +24,11 @@ export const routesTool: McpTool = {
         type: "string",
         description: "Monorepo application to inspect (defaults to the workspace default project).",
       },
+      format: {
+        type: "string",
+        enum: ["json", "text"],
+        description: "\"text\" returns a compact one-line-per-route listing (fewer tokens). Default json.",
+      },
     },
     additionalProperties: false,
   },
@@ -41,6 +46,27 @@ export const routesTool: McpTool = {
     const path = typeof args.path === "string" ? args.path : undefined;
     if (path) routes = routes.filter((r) => r.path.includes(path));
 
-    return json({ project: boot.project, count: routes.length, routes });
+    if (args.format === "text") {
+      const lines = routes.map(textLine).join("\n");
+      return `${boot.project} — ${routes.length} route(s)\n${lines}`;
+    }
+
+    // JSON: drop the empty guards/interceptors/pipes arrays that dominate the payload.
+    return json({
+      project: boot.project,
+      count: routes.length,
+      routes: routes.map((r) => compact({ ...r })),
+    });
   },
 };
+
+function textLine(r: RouteInfo): string {
+  const enh = [
+    r.guards.length ? `guards:${r.guards.join(",")}` : "",
+    r.interceptors.length ? `int:${r.interceptors.join(",")}` : "",
+    r.pipes.length ? `pipes:${r.pipes.join(",")}` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return `${r.method.padEnd(6)} ${r.path}  →  ${r.controller}.${r.handler}${enh ? "  " + enh : ""}`;
+}

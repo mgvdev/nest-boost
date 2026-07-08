@@ -1,6 +1,6 @@
 import { bootApp } from "../boot";
-import { collectModules } from "../introspect";
-import { json, type McpTool } from "./types";
+import { collectModules, type ModuleInfo } from "../introspect";
+import { compact, json, type McpTool } from "./types";
 
 export const graphTool: McpTool = {
   name: "module_graph",
@@ -21,6 +21,11 @@ export const graphTool: McpTool = {
         type: "string",
         description: "Monorepo application to inspect (defaults to the workspace default project).",
       },
+      format: {
+        type: "string",
+        enum: ["json", "text"],
+        description: "\"text\" returns a compact per-module outline (fewer tokens). Default json.",
+      },
     },
     additionalProperties: false,
   },
@@ -34,6 +39,38 @@ export const graphTool: McpTool = {
     const filter = typeof args.module === "string" ? args.module : undefined;
     if (filter) modules = modules.filter((m) => m.name === filter);
 
-    return json({ project: boot.project, count: modules.length, modules });
+    if (args.format === "text") {
+      return `${boot.project} — ${modules.length} module(s)\n${modules.map(textModule).join("\n")}`;
+    }
+
+    return json({
+      project: boot.project,
+      count: modules.length,
+      modules: modules.map((m) =>
+        compact({
+          name: m.name,
+          controllers: m.controllers,
+          // Drop the redundant isController/default-scope/exported noise per provider.
+          providers: m.providers.map((p) =>
+            compact({ name: p.name, scope: p.scope !== "default" ? p.scope : undefined, exported: p.exported || undefined }),
+          ),
+          imports: m.imports,
+          exports: m.exports,
+        }),
+      ),
+    });
   },
 };
+
+function textModule(m: ModuleInfo): string {
+  const lines = [m.name];
+  if (m.controllers.length) lines.push(`  controllers: ${m.controllers.join(", ")}`);
+  if (m.providers.length) {
+    lines.push(
+      `  providers: ${m.providers.map((p) => (p.scope !== "default" ? `${p.name}(${p.scope})` : p.name)).join(", ")}`,
+    );
+  }
+  if (m.imports.length) lines.push(`  imports: ${m.imports.join(", ")}`);
+  if (m.exports.length) lines.push(`  exports: ${m.exports.join(", ")}`);
+  return lines.join("\n");
+}

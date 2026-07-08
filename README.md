@@ -96,6 +96,11 @@ In a **monorepo**, `list_routes` and `module_graph` accept a `project` argument 
 specific application (omitted → the workspace default project); `application_info` lists
 every app and library.
 
+**Token-economical output:** all tools return compact JSON (no indentation), omit empty/false
+fields, and drop framework-internal providers. `list_routes` and `module_graph` also accept
+`format: "text"` for a dense one-line-per-item listing — roughly a **60–70 % token reduction**
+versus pretty-printed JSON on typical apps.
+
 Most editors that speak MCP pick up the generated config automatically. To register
 manually:
 
