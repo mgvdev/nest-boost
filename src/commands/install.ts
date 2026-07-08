@@ -1,4 +1,6 @@
 import { intro, log, note, outro } from "@clack/prompts";
+import pkg from "../../package.json";
+import { printBanner } from "../install/banner";
 import { saveConfig, type NestBoostConfig, type ProjectConfig } from "../install/config";
 import { detect, isNestProject, type Detection } from "../install/detect";
 import { findEntryModule, findEntryModuleIn } from "../install/entry";
@@ -165,6 +167,7 @@ export async function runInstall(args: string[]): Promise<void> {
   const detection = detect(projectRoot);
   const nonInteractive = flags.yes || !!flags.agents;
 
+  printBanner(pkg.version);
   intro("nest-boost install");
 
   if (!isNestProject(detection)) {
