@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { skillsDir } from "../../lib/resources";
 import { architectureById } from "../architectures";
 import { authById } from "../auth";
+import { discoverPackageSkills } from "../third-party";
 import type { Detection } from "../detect";
 import type { Selection } from "../selection";
 import type { SkillsTarget } from "../agents/agent";
@@ -55,8 +56,11 @@ export function localSkills(projectRoot: string): ResolvedSkill[] {
 }
 
 /**
- * Resolve the full set of skills to install: packaged skills for the project,
- * merged with local custom skills. Local skills override packaged ones by name.
+ * Resolve the full set of skills to install, in increasing priority:
+ * 1. packaged skills selected for the project,
+ * 2. skills bundled by installed dependencies (third-party packages),
+ * 3. local custom skills in `.nest-boost/skills`.
+ * Later sources override earlier ones by name.
  */
 export function resolveSkills(
   projectRoot: string,
@@ -67,8 +71,11 @@ export function resolveSkills(
   for (const name of skillsForDetection(detection, selection)) {
     byName.set(name, { name, src: join(skillsDir(), name) });
   }
+  for (const skill of discoverPackageSkills(projectRoot)) {
+    byName.set(skill.name, skill); // third-party overrides packaged
+  }
   for (const skill of localSkills(projectRoot)) {
-    byName.set(skill.name, skill); // local overrides packaged
+    byName.set(skill.name, skill); // local overrides everything
   }
   return [...byName.values()];
 }
