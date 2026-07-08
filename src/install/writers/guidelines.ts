@@ -41,6 +41,11 @@ export function composeGuidelines(detection: Detection, selection: Selection = {
     if (versioned) sections.push(versioned);
   }
 
+  if (detection.monorepo) {
+    const monorepo = readGuideline("monorepo.md");
+    if (monorepo) sections.push(monorepo);
+  }
+
   const arch = selection.architecture ? architectureById(selection.architecture) : undefined;
   if (arch) {
     const body = readGuideline(arch.guideline);

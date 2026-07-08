@@ -1,12 +1,12 @@
 import { intro, log, note, outro } from "@clack/prompts";
-import { saveConfig, type NestBoostConfig } from "../install/config";
+import { saveConfig, type NestBoostConfig, type ProjectConfig } from "../install/config";
 import { detect, isNestProject, type Detection } from "../install/detect";
-import { findEntryModule } from "../install/entry";
+import { findEntryModule, findEntryModuleIn } from "../install/entry";
 import { agentById, AGENTS, type Agent } from "../install/agents/agent";
 import { DEFAULT_ARCHITECTURE } from "../install/architectures";
 import { authById, defaultAuthFor } from "../install/auth";
 import { fetchOfficialSkill } from "../install/fetch-skill";
-import { promptAgents, promptArchitecture, promptAuth, promptConfirm, promptEntryModule } from "../install/prompt";
+import { promptAgents, promptArchitecture, promptAuth, promptConfirm, promptDefaultProject, promptEntryModule } from "../install/prompt";
 import { mcpCommandString, mcpServerEntry, resolveRunner, type Runner } from "../install/runner";
 import type { Selection } from "../install/selection";
 import { composeGuidelines, writeGuidelines } from "../install/writers/guidelines";
@@ -15,8 +15,8 @@ import { copySkills, resolveSkills } from "../install/writers/skills";
 
 export interface InstallOptions {
   agents: string[];
-  entryModule: string;
-  moduleExport: string;
+  projects: ProjectConfig[];
+  defaultProject: string;
   architecture: string;
   auth: string;
   /** Launcher for the MCP server entry (bunx or npx). */
@@ -66,8 +66,8 @@ export function performInstall(
   }
 
   const config: NestBoostConfig = {
-    entryModule: options.entryModule,
-    moduleExport: options.moduleExport,
+    projects: options.projects,
+    defaultProject: options.defaultProject,
     agents: options.agents,
     architecture: options.architecture,
     auth: options.auth,
@@ -91,6 +91,7 @@ interface Flags {
   arch?: string;
   auth?: string;
   runner?: string;
+  defaultProject?: string;
   fetchAuthSkill: boolean;
 }
 
@@ -105,9 +106,50 @@ function parseFlags(args: string[]): Flags {
     else if (arg === "--arch" || arg === "--architecture") flags.arch = args[++i];
     else if (arg === "--auth") flags.auth = args[++i];
     else if (arg === "--runner") flags.runner = args[++i];
+    else if (arg === "--default-project") flags.defaultProject = args[++i];
     else if (arg === "--fetch-auth-skill") flags.fetchAuthSkill = true;
   }
   return flags;
+}
+
+/**
+ * Build the project list + default project. In a monorepo, derive one entry per
+ * workspace project from nest-cli.json; otherwise discover a single app.
+ */
+async function resolveProjects(
+  projectRoot: string,
+  detection: Detection,
+  flags: Flags,
+  nonInteractive: boolean,
+): Promise<{ projects: ProjectConfig[]; defaultProject: string }> {
+  if (detection.monorepo && detection.projects.length > 0) {
+    const projects: ProjectConfig[] = detection.projects.map((p) => {
+      if (p.type === "library") return { name: p.name, type: "library", root: p.root };
+      const entry = findEntryModuleIn(projectRoot, { sourceRoot: p.sourceRoot, entryFile: p.entryFile });
+      return {
+        name: p.name,
+        type: "application",
+        root: p.root,
+        entryModule: entry.entryModule,
+        moduleExport: entry.moduleExport,
+      };
+    });
+
+    const appNames = projects.filter((p) => p.type === "application").map((p) => p.name);
+    let defaultProject = flags.defaultProject ?? detection.defaultProject ?? appNames[0] ?? projects[0].name;
+    if (!nonInteractive && !flags.defaultProject && appNames.length > 1) {
+      defaultProject = await promptDefaultProject(appNames, defaultProject);
+    }
+    return { projects, defaultProject };
+  }
+
+  const discovered = findEntryModule(projectRoot);
+  const entryModule = flags.entry ?? (nonInteractive ? discovered.entryModule : await promptEntryModule(discovered.entryModule));
+  const moduleExport = flags.module ?? discovered.moduleExport;
+  return {
+    projects: [{ name: "app", type: "application", root: ".", entryModule, moduleExport }],
+    defaultProject: "app",
+  };
 }
 
 export async function runInstall(args: string[]): Promise<void> {
@@ -124,9 +166,13 @@ export async function runInstall(args: string[]): Promise<void> {
     log.info(`Detected NestJS ${detection.nest?.version ?? "?"} with ${detection.entries.length} ecosystem package(s).`);
   }
 
-  const discovered = findEntryModule(projectRoot);
-  const entryModule = flags.entry ?? (nonInteractive ? discovered.entryModule : await promptEntryModule(discovered.entryModule));
-  const moduleExport = flags.module ?? discovered.moduleExport;
+  if (detection.monorepo) {
+    const apps = detection.projects.filter((p) => p.type === "application").length;
+    const libs = detection.projects.filter((p) => p.type === "library").length;
+    log.info(`Monorepo workspace: ${apps} app(s), ${libs} lib(rary/ies).`);
+  }
+
+  const { projects, defaultProject } = await resolveProjects(projectRoot, detection, flags, nonInteractive);
 
   const architecture = flags.arch ?? (nonInteractive ? DEFAULT_ARCHITECTURE : await promptArchitecture());
 
@@ -141,10 +187,14 @@ export async function runInstall(args: string[]): Promise<void> {
     log.warn("Bun CLI not detected — using `npx` to launch the MCP server. nest-boost still requires Bun to be installed to run.");
   }
 
-  const summary = performInstall(projectRoot, detection, { agents, entryModule, moduleExport, architecture, auth, runner });
+  const summary = performInstall(projectRoot, detection, { agents, projects, defaultProject, architecture, auth, runner });
 
+  const projectsLine = detection.monorepo
+    ? `Projects: ${projects.map((p) => (p.name === defaultProject ? `${p.name}*` : p.name)).join(", ")}  (*=default)`
+    : "";
   note(
     [
+      projectsLine,
       `Arch:    ${architecture}`,
       `Auth:    ${auth}`,
       `Runner:  ${runner}`,

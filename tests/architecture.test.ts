@@ -46,8 +46,8 @@ describe("architecture selection", () => {
     const dir = makeProject();
     performInstall(dir, detect(dir), {
       agents: ["claude"],
-      entryModule: "src/app.module.ts",
-      moduleExport: "AppModule",
+      projects: [{ name: "app", type: "application", root: ".", entryModule: "src/app.module.ts", moduleExport: "AppModule" }],
+      defaultProject: "app",
       architecture: "cqrs",
       auth: "none",
       runner: "bunx",
@@ -68,8 +68,8 @@ describe("architecture selection", () => {
     const dir = makeProject();
     performInstall(dir, detect(dir), {
       agents: ["claude"],
-      entryModule: "src/app.module.ts",
-      moduleExport: "AppModule",
+      projects: [{ name: "app", type: "application", root: ".", entryModule: "src/app.module.ts", moduleExport: "AppModule" }],
+      defaultProject: "app",
       architecture: "hexagonal",
       auth: "none",
       runner: "bunx",

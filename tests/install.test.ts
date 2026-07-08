@@ -31,8 +31,8 @@ describe("performInstall", () => {
   test("writes MCP config, guidelines, skills, and config for chosen agents", () => {
     const summary = performInstall(dir, detect(dir), {
       agents: ["claude", "generic"],
-      entryModule: "src/app.module.ts",
-      moduleExport: "AppModule",
+      projects: [{ name: "app", type: "application", root: ".", entryModule: "src/app.module.ts", moduleExport: "AppModule" }],
+      defaultProject: "app",
       architecture: "standard",
       auth: "none",
       runner: "bunx",
@@ -58,7 +58,8 @@ describe("performInstall", () => {
     // Config persisted
     const config = JSON.parse(readFileSync(join(dir, "nest-boost.json"), "utf8"));
     expect(config.agents).toEqual(["claude", "generic"]);
-    expect(config.entryModule).toBe("src/app.module.ts");
+    expect(config.defaultProject).toBe("app");
+    expect(config.projects[0].entryModule).toBe("src/app.module.ts");
     expect(config.architecture).toBe("standard");
 
     expect(summary.filesWritten).toContain("nest-boost.json");
@@ -72,8 +73,8 @@ describe("performInstall", () => {
 
     performInstall(dir, detect(dir), {
       agents: ["claude"],
-      entryModule: "src/app.module.ts",
-      moduleExport: "AppModule",
+      projects: [{ name: "app", type: "application", root: ".", entryModule: "src/app.module.ts", moduleExport: "AppModule" }],
+      defaultProject: "app",
       architecture: "standard",
       auth: "none",
       runner: "bunx",

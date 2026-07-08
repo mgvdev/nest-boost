@@ -5,9 +5,10 @@ import { json, type McpTool } from "./types";
 export const routesTool: McpTool = {
   name: "list_routes",
   description:
-    "List the application's HTTP routes with method, path, controller, handler, owning module, " +
+    "List an application's HTTP routes with method, path, controller, handler, owning module, " +
     "and any guards/interceptors/pipes attached at the class or handler level. Optionally filter " +
-    "by HTTP method or a path substring.",
+    "by HTTP method or a path substring. In a monorepo, pass `project` to target a specific app " +
+    "(defaults to the workspace default project).",
   inputSchema: {
     type: "object",
     properties: {
@@ -19,12 +20,17 @@ export const routesTool: McpTool = {
         type: "string",
         description: "Only include routes whose path contains this substring.",
       },
+      project: {
+        type: "string",
+        description: "Monorepo application to inspect (defaults to the workspace default project).",
+      },
     },
     additionalProperties: false,
   },
 
   async run(args, ctx) {
-    const boot = await bootApp(ctx.projectRoot);
+    const project = typeof args.project === "string" ? args.project : undefined;
+    const boot = await bootApp(ctx.projectRoot, project);
     if (!boot.ok) return json({ error: boot.error });
 
     let routes = collectRoutes(boot.modules);
@@ -35,6 +41,6 @@ export const routesTool: McpTool = {
     const path = typeof args.path === "string" ? args.path : undefined;
     if (path) routes = routes.filter((r) => r.path.includes(path));
 
-    return json({ count: routes.length, routes });
+    return json({ project: boot.project, count: routes.length, routes });
   },
 };

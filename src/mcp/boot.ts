@@ -3,12 +3,13 @@ import { isAbsolute, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { INestApplicationContext } from "@nestjs/common";
 import { ModulesContainer, NestFactory } from "@nestjs/core";
-import { DEFAULT_CONFIG, loadConfig } from "../install/config";
+import { DEFAULT_CONFIG, loadConfig, projectByName, type ProjectConfig } from "../install/config";
 
 export interface BootSuccess {
   ok: true;
   app: INestApplicationContext;
   modules: ModulesContainer;
+  project: string;
   entryModule: string;
 }
 
@@ -19,40 +20,71 @@ export interface BootFailure {
 
 export type BootResult = BootSuccess | BootFailure;
 
-let cached: BootResult | null = null;
+/** Booted apps are cached per project name for the MCP server's lifetime. */
+const cache = new Map<string, BootResult>();
 
 /**
- * Boot the host NestJS application in preview mode for introspection.
+ * Boot a NestJS application in preview mode for introspection.
  *
  * `preview: true` instantiates the module/provider/controller graph WITHOUT
  * running lifecycle hooks (onModuleInit, etc.) or opening real DB/network
  * connections, making it safe to run against a production app. `snapshot: true`
- * populates the internal graph. The booted context is cached for the lifetime
- * of the MCP server process.
+ * populates the internal graph.
+ *
+ * In a monorepo, `projectName` selects which application to boot; when omitted
+ * the workspace default project is used. Results are cached per project.
  */
-export async function bootApp(projectRoot: string = process.cwd()): Promise<BootResult> {
-  if (cached) return cached;
-  cached = await bootUncached(projectRoot);
-  return cached;
+export async function bootApp(
+  projectRoot: string = process.cwd(),
+  projectName?: string,
+): Promise<BootResult> {
+  const config = loadConfig(projectRoot) ?? DEFAULT_CONFIG;
+  const project = projectByName(config, projectName);
+
+  if (!project) {
+    const available = config.projects.map((p) => p.name).join(", ") || "(none)";
+    return {
+      ok: false,
+      error: `Unknown project "${projectName}". Available projects: ${available}.`,
+    };
+  }
+
+  const key = project.name;
+  const hit = cache.get(key);
+  if (hit) return hit;
+
+  const result = await bootProject(projectRoot, project);
+  cache.set(key, result);
+  return result;
 }
 
 /** Reset the cache — used by tests that boot multiple fixtures in one process. */
 export function resetBootCache(): void {
-  cached = null;
+  cache.clear();
 }
 
-async function bootUncached(projectRoot: string): Promise<BootResult> {
-  const config = loadConfig(projectRoot) ?? DEFAULT_CONFIG;
-  const entryPath = isAbsolute(config.entryModule)
-    ? config.entryModule
-    : join(projectRoot, config.entryModule);
+async function bootProject(projectRoot: string, project: ProjectConfig): Promise<BootResult> {
+  if (project.type === "library") {
+    return {
+      ok: false,
+      error:
+        `"${project.name}" is a library and cannot be booted standalone. ` +
+        `Introspect an application project instead; a library's modules appear in the graph of any app that imports it.`,
+    };
+  }
 
+  const entryModule = project.entryModule;
+  if (!entryModule) {
+    return { ok: false, error: `Project "${project.name}" has no configured entry module.` };
+  }
+
+  const entryPath = isAbsolute(entryModule) ? entryModule : join(projectRoot, entryModule);
   if (!existsSync(entryPath)) {
     return {
       ok: false,
       error:
-        `Could not find the root module at "${config.entryModule}". ` +
-        `Run \`nest-boost install\` to configure the entry module, or check nest-boost.json.`,
+        `Could not find the root module for "${project.name}" at "${entryModule}". ` +
+        `Run \`nest-boost install\`, or check nest-boost.json.`,
     };
   }
 
@@ -60,14 +92,15 @@ async function bootUncached(projectRoot: string): Promise<BootResult> {
   try {
     moduleExports = (await import(pathToFileURL(entryPath).href)) as Record<string, unknown>;
   } catch (err) {
-    return { ok: false, error: `Failed to import "${config.entryModule}": ${describe(err)}` };
+    return { ok: false, error: `Failed to import "${entryModule}": ${describe(err)}` };
   }
 
-  const rootModule = moduleExports[config.moduleExport] ?? moduleExports.default;
+  const exportName = project.moduleExport ?? "AppModule";
+  const rootModule = moduleExports[exportName] ?? moduleExports.default;
   if (typeof rootModule !== "function") {
     return {
       ok: false,
-      error: `Export "${config.moduleExport}" not found (or not a module class) in "${config.entryModule}".`,
+      error: `Export "${exportName}" not found (or not a module class) in "${entryModule}".`,
     };
   }
 
@@ -79,9 +112,9 @@ async function bootUncached(projectRoot: string): Promise<BootResult> {
       abortOnError: false,
     });
     const modules = app.get(ModulesContainer);
-    return { ok: true, app, modules, entryModule: config.entryModule };
+    return { ok: true, app, modules, project: project.name, entryModule };
   } catch (err) {
-    return { ok: false, error: `The application failed to boot: ${describe(err)}` };
+    return { ok: false, error: `The application "${project.name}" failed to boot: ${describe(err)}` };
   }
 }
 

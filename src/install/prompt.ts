@@ -46,6 +46,20 @@ export async function promptAuth(initial: string): Promise<string> {
   return choice as string;
 }
 
+/** Single-select the default workspace project (the app the MCP boots by default). */
+export async function promptDefaultProject(appNames: string[], initial: string): Promise<string> {
+  const choice = await select({
+    message: "Which application is the default project (booted by the MCP when none is specified)?",
+    initialValue: initial,
+    options: appNames.map((name) => ({ value: name, label: name })),
+  });
+  if (isCancel(choice)) {
+    cancel("Aborted.");
+    process.exit(0);
+  }
+  return choice as string;
+}
+
 /** Yes/no confirm, used e.g. to fetch the official Better Auth skill. */
 export async function promptConfirm(message: string): Promise<boolean> {
   const answer = await confirm({ message, initialValue: false });

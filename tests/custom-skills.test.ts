@@ -30,8 +30,8 @@ afterEach(() => {
 
 const opts = {
   agents: ["claude"],
-  entryModule: "src/app.module.ts",
-  moduleExport: "AppModule",
+  projects: [{ name: "app", type: "application" as const, root: ".", entryModule: "src/app.module.ts", moduleExport: "AppModule" }],
+  defaultProject: "app",
   architecture: "standard",
   auth: "none",
   runner: "bunx" as const,

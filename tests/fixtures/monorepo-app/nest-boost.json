@@ -1,0 +1,27 @@
+{
+  "projects": [
+    {
+      "name": "api",
+      "type": "application",
+      "root": "apps/api",
+      "entryModule": "apps/api/src/api.module.ts",
+      "moduleExport": "ApiModule"
+    },
+    {
+      "name": "worker",
+      "type": "application",
+      "root": "apps/worker",
+      "entryModule": "apps/worker/src/worker.module.ts",
+      "moduleExport": "WorkerModule"
+    },
+    {
+      "name": "shared",
+      "type": "library",
+      "root": "libs/shared"
+    }
+  ],
+  "defaultProject": "api",
+  "agents": ["claude"],
+  "architecture": "standard",
+  "auth": "none"
+}

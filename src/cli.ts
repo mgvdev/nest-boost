@@ -15,6 +15,7 @@ Install options:
   --arch <style>         Architecture style (standard,cqrs,hexagonal)
   --auth <strategy>      Auth strategy (none,passport,better-auth)
   --runner <bunx|npx>    MCP launcher for the generated config (default: auto-detect)
+  --default-project <n>  Monorepo: the app the MCP boots by default
   --fetch-auth-skill     Fetch the official community skill for the auth strategy (e.g. Better Auth)
   --yes                  Accept defaults, skip prompts
 `;

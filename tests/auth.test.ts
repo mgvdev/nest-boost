@@ -53,8 +53,8 @@ describe("auth strategy selection", () => {
     const dir = makeProject({ "better-auth": "^1.0.0", "@thallesp/nestjs-better-auth": "^1.0.0" });
     const summary = performInstall(dir, detect(dir), {
       agents: ["claude"],
-      entryModule: "src/app.module.ts",
-      moduleExport: "AppModule",
+      projects: [{ name: "app", type: "application", root: ".", entryModule: "src/app.module.ts", moduleExport: "AppModule" }],
+      defaultProject: "app",
       architecture: "standard",
       auth: "better-auth",
       runner: "bunx",

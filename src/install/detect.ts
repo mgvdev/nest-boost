@@ -6,6 +6,7 @@ import {
   resolveInstalledVersion,
   type PackageJson,
 } from "../lib/pkg";
+import { readWorkspace, type ProjectMeta } from "./nest-cli";
 
 export interface DetectedPackage {
   name: string;
@@ -25,6 +26,12 @@ export interface Detection {
   packages: DetectedPackage[];
   /** Ecosystem entries whose match hit this project. */
   entries: EcosystemEntry[];
+  /** True when nest-cli.json declares a monorepo workspace. */
+  monorepo: boolean;
+  /** Workspace projects (empty for a single-app project). */
+  projects: ProjectMeta[];
+  /** Default workspace project name, if any. */
+  defaultProject?: string;
 }
 
 /**
@@ -52,6 +59,7 @@ export function detect(projectRoot: string): Detection {
   }
 
   const nestVersion = resolveInstalledVersion(projectRoot, "@nestjs/core", deps["@nestjs/core"]);
+  const workspace = readWorkspace(projectRoot);
 
   return {
     projectRoot,
@@ -63,6 +71,9 @@ export function detect(projectRoot: string): Detection {
     nest: nestVersion ? { version: nestVersion, major: majorOf(nestVersion) } : undefined,
     packages,
     entries,
+    monorepo: workspace.monorepo,
+    projects: workspace.projects,
+    defaultProject: workspace.defaultProject,
   };
 }
 
