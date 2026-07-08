@@ -1,9 +1,9 @@
 import { existsSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
-import { pathToFileURL } from "node:url";
 import type { INestApplicationContext } from "@nestjs/common";
 import { ModulesContainer, NestFactory } from "@nestjs/core";
 import { DEFAULT_CONFIG, loadConfig, projectByName, type ProjectConfig } from "../install/config";
+import { importModule } from "../lib/load-module";
 
 export interface BootSuccess {
   ok: true;
@@ -90,7 +90,7 @@ async function bootProject(projectRoot: string, project: ProjectConfig): Promise
 
   let moduleExports: Record<string, unknown>;
   try {
-    moduleExports = (await import(pathToFileURL(entryPath).href)) as Record<string, unknown>;
+    moduleExports = await importModule(entryPath);
   } catch (err) {
     return { ok: false, error: `Failed to import "${entryModule}": ${describe(err)}` };
   }

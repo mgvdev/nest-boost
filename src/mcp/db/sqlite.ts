@@ -1,7 +1,37 @@
-import { Database } from "bun:sqlite";
 import { sqlitePath } from "./connection";
 import { ROW_CAP } from "./readonly";
 import type { QueryResult, SchemaResult, TableSchema } from "./index";
+
+interface SqliteHandle {
+  all(sql: string): Record<string, unknown>[];
+  close(): void;
+}
+
+/**
+ * Open a read-only SQLite connection with whatever driver is available, in
+ * order: Bun's built-in `bun:sqlite` (tests / Bun runtime), `better-sqlite3`
+ * (recommended on Node), then Node 22+'s built-in `node:sqlite`.
+ */
+async function openSqlite(path: string, readonly: boolean): Promise<SqliteHandle> {
+  if (typeof Bun !== "undefined") {
+    const { Database } = await import("bun:sqlite");
+    const db = new Database(path, { readonly });
+    return { all: (sql) => db.query(sql).all() as Record<string, unknown>[], close: () => db.close() };
+  }
+
+  try {
+    const mod: any = await import("better-sqlite3" as string);
+    const Database = mod.default ?? mod;
+    const db = new Database(path, { readonly });
+    return { all: (sql) => db.prepare(sql).all(), close: () => db.close() };
+  } catch {
+    // fall through to node:sqlite
+  }
+
+  const mod: any = await import("node:sqlite");
+  const db = new mod.DatabaseSync(path, { readOnly: readonly });
+  return { all: (sql) => db.prepare(sql).all(), close: () => db.close() };
+}
 
 /** Only allow simple identifiers where parameters can't be bound (PRAGMA). */
 function safeIdent(name: string): string {
@@ -9,17 +39,17 @@ function safeIdent(name: string): string {
   return name;
 }
 
-export function schema(url: string, table?: string): SchemaResult {
-  const db = new Database(sqlitePath(url), { readonly: true });
+export async function schema(url: string, table?: string): Promise<SchemaResult> {
+  const db = await openSqlite(sqlitePath(url), true);
   try {
     const names: string[] = table
       ? [table]
-      : (db
-          .query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
-          .all() as { name: string }[]).map((r) => r.name);
+      : (db.all("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name") as {
+          name: string;
+        }[]).map((r) => r.name);
 
     const tables: TableSchema[] = names.map((name) => {
-      const cols = db.query(`PRAGMA table_info(${safeIdent(name)})`).all() as {
+      const cols = db.all(`PRAGMA table_info(${safeIdent(name)})`) as {
         name: string;
         type: string;
         notnull: number;
@@ -42,10 +72,10 @@ export function schema(url: string, table?: string): SchemaResult {
   }
 }
 
-export function query(url: string, sql: string): QueryResult {
-  const db = new Database(sqlitePath(url), { readonly: true }); // driver-level read-only
+export async function query(url: string, sql: string): Promise<QueryResult> {
+  const db = await openSqlite(sqlitePath(url), true); // driver-level read-only
   try {
-    const rows = db.query(sql).all() as Record<string, unknown>[];
+    const rows = db.all(sql);
     const truncated = rows.length > ROW_CAP;
     const capped = truncated ? rows.slice(0, ROW_CAP) : rows;
     return {

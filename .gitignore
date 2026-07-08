@@ -6,3 +6,4 @@ bun.lockb
 
 # nest-boost generates these in host projects; ignored here to keep the repo clean
 tests/fixtures/**/node_modules/
+.npmrc

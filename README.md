@@ -8,7 +8,7 @@ An MCP server, AI guidelines, and agent skills that teach your coding agent how 
 NestJS application is actually wired — its real modules, routes, and dependency-injection
 graph — and how to write idiomatic Nest code.
 
-[![Bun](https://img.shields.io/badge/runtime-Bun-000000?logo=bun)](https://bun.sh)
+[![Node.js](https://img.shields.io/badge/runtime-Node.js-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![NestJS](https://img.shields.io/badge/framework-NestJS-E0234E?logo=nestjs&logoColor=white)](https://nestjs.com)
 [![MCP](https://img.shields.io/badge/protocol-MCP-4A154B)](https://modelcontextprotocol.io)
 ![License](https://img.shields.io/badge/license-MIT-blue)
@@ -26,8 +26,8 @@ grounded knowledge of your codebase over the [Model Context
 Protocol](https://modelcontextprotocol.io), plus curated best-practice guidance tuned to
 the packages and conventions you actually use.
 
-It's the NestJS counterpart to [Laravel Boost](https://github.com/laravel/boost),
-built on [Bun](https://bun.sh) as both runtime and package manager.
+It's the NestJS counterpart to [Laravel Boost](https://github.com/laravel/boost) — a
+**Node.js** CLI (developed with Bun).
 
 ## What you get
 
@@ -42,13 +42,14 @@ One command wires all of it into your agent of choice.
 
 ## Requirements
 
-- [Bun](https://bun.sh) `>= 1.1`
-- A NestJS project (`>= 9`)
+- [Node.js](https://nodejs.org) `>= 18.18`
+- A NestJS project (`>= 9`) whose `tsconfig.json` has `emitDecoratorMetadata` (the Nest default)
+- SQLite database tools also work on Node `>= 22` (built-in `node:sqlite`) or with `better-sqlite3`
 
 ## Quick start
 
 ```bash
-bun add -d @mgvdev/nest-boost
+npm install -D @mgvdev/nest-boost
 npx @mgvdev/nest-boost install
 ```
 
@@ -113,9 +114,9 @@ manually:
 ```
 
 The generated config uses `npx` by default; pass `--runner bunx` at install to use `bunx`
-instead (both honor the `#!/usr/bin/env bun` shebang). Either way, **Bun must be
-installed** — the MCP server imports your app's TypeScript and boots Nest, which needs a
-TS-capable runtime.
+instead. The MCP server imports your app's TypeScript and boots Nest — under Node it loads
+`.ts` through [`tsx`](https://tsx.is) (which emits the decorator metadata NestJS DI needs),
+so your `tsconfig.json` must have `emitDecoratorMetadata: true` (standard in every Nest app).
 
 ## Guidelines
 
@@ -171,7 +172,7 @@ the schema after migrations, and real rows — independent of the ORM you use.
   ```
 - **Engines**: PostgreSQL, MySQL/MariaDB, SQLite, MongoDB. The dialect is inferred from the URL
   scheme. Drivers (`pg`, `mysql2`, `mongodb`) are loaded from your project's `node_modules`
-  (they're already there if your app uses them); SQLite uses Bun's built-in driver.
+  (they're already there if your app uses them); SQLite uses `node:sqlite` (Node 22+) or `better-sqlite3`.
 - **Read-only, enforced**: `db_query` rejects anything but a single read statement and runs it
   inside a read-only transaction (SQLite opens the file read-only; MongoDB issues a `find`).
   Results are capped. The agent can inspect data, never mutate it.

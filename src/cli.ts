@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 const HELP = `nest-boost — Laravel Boost for NestJS
 
 Usage:

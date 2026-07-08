@@ -14,17 +14,18 @@
     "url": "https://github.com/mgvdev/nest-boost/issues"
   },
   "bin": {
-    "nest-boost": "./src/cli.ts"
+    "nest-boost": "./dist/cli.js"
   },
   "files": [
-    "resources",
-    "src"
+    "dist",
+    "resources"
   ],
   "scripts": {
     "dev": "bun run src/cli.ts",
+    "build": "bun build ./src/cli.ts --target=node --format=esm --packages=external --outdir=dist && bun run scripts/postbuild.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "bun run typecheck && bun test"
+    "prepublishOnly": "bun run build && bun run typecheck && bun test"
   },
   "publishConfig": {
     "access": "public"
@@ -39,21 +40,26 @@
     "agent"
   ],
   "engines": {
-    "bun": ">=1.1.0"
+    "node": ">=18.18.0"
   },
   "dependencies": {
     "@clack/prompts": "^0.7.0",
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "tsx": "^4.19.0"
   },
   "peerDependencies": {
     "@nestjs/common": ">=9.0.0",
-    "@nestjs/core": ">=9.0.0"
+    "@nestjs/core": ">=9.0.0",
+    "better-sqlite3": ">=8.0.0"
   },
   "peerDependenciesMeta": {
     "@nestjs/common": {
       "optional": true
     },
     "@nestjs/core": {
+      "optional": true
+    },
+    "better-sqlite3": {
       "optional": true
     }
   },

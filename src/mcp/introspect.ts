@@ -1,12 +1,12 @@
 import { RequestMethod } from "@nestjs/common";
+import { MetadataScanner, type ModulesContainer } from "@nestjs/core";
 import {
   GUARDS_METADATA,
   INTERCEPTORS_METADATA,
   METHOD_METADATA,
   PATH_METADATA,
   PIPES_METADATA,
-} from "@nestjs/common/constants";
-import { MetadataScanner, type ModulesContainer } from "@nestjs/core";
+} from "./nest-constants";
 
 const scanner = new MetadataScanner();
 

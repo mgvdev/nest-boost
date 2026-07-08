@@ -1,9 +1,9 @@
 import { existsSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
-import { pathToFileURL } from "node:url";
 import type { INestApplicationContext } from "@nestjs/common";
 import { ModulesContainer, NestFactory } from "@nestjs/core";
 import { DEFAULT_CONFIG, loadConfig, projectByName } from "../../install/config";
+import { importModule } from "../../lib/load-module";
 
 export interface ContextSuccess {
   ok: true;
@@ -64,7 +64,7 @@ async function createContext(
 
   let exports: Record<string, unknown>;
   try {
-    exports = (await import(pathToFileURL(entryPath).href)) as Record<string, unknown>;
+    exports = await importModule(entryPath);
   } catch (err) {
     return { ok: false, error: `Failed to import "${entryModule}": ${describe(err)}` };
   }
