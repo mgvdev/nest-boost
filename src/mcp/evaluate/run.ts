@@ -13,7 +13,7 @@ const RESERVED = new Set([
   "if", "import", "in", "instanceof", "new", "null", "return", "super", "switch", "this",
   "throw", "true", "try", "typeof", "var", "void", "while", "with", "yield", "let", "static",
   "implements", "interface", "package", "private", "protected", "public", "arguments", "eval",
-  "get", "$",
+  "get", "$", "app",
 ]);
 
 export interface EvaluateOutcome {
@@ -52,7 +52,9 @@ export async function runEvaluate(
   const body = /\breturn\b/.test(code) ? code : `return (\n${code}\n);`;
   // Assign to a marker so the transpiler/eval keeps the (side-effect-free) arrow.
   const marker = "__nestBoostEvalFn";
-  const source = `globalThis.${marker} = (async (get, $, ${names.join(", ")}) => {\n${body}\n});`;
+  // `app` is the INestApplicationContext (app.get/resolve/select); `get`/`$`
+  // resolve a provider; each provider/controller class is in scope by name.
+  const source = `globalThis.${marker} = (async (get, $, app, ${names.join(", ")}) => {\n${body}\n});`;
 
   const js = await transpile(source);
 
@@ -62,7 +64,7 @@ export async function runEvaluate(
   delete (globalThis as any)[marker];
 
   const resolve = makeResolve(app, registry);
-  const result = await withTimeout(fn(resolve, resolve, ...values), timeoutMs);
+  const result = await withTimeout(fn(resolve, resolve, app, ...values), timeoutMs);
   return { result: safeSerialize(result), providers: [...registry.classes.keys()] };
 }
 

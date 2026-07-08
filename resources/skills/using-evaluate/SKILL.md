@@ -19,6 +19,7 @@ Prefer the read-only tools (`db_schema`, `db_query`, `module_graph`, `list_route
 answer the question — `evaluate` is heavier and unguarded (see Safety).
 
 ## How it works
+- `app` is the `INestApplicationContext` — use `app.get(Token)`, `app.resolve(Token)`, `app.select(Module)`.
 - `get(Token)` / `$(Token)` resolve a provider from the DI container.
 - **Every provider/controller class is already in scope by name** — reference it directly:
   `$(BillingService)`. You can also pass a **string**: `$('BillingService')`.

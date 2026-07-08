@@ -41,6 +41,11 @@ describe("evaluate tool", () => {
     expect(res.result).toBe(3);
   });
 
+  test("exposes the app context", async () => {
+    const res = JSON.parse(await evaluateTool.run({ code: "return app.get(MathService).add(40, 2)" }, ctx));
+    expect(res.result).toBe(42);
+  });
+
   test("resolves a custom-token (value) provider by string name", async () => {
     const res = JSON.parse(await evaluateTool.run({ code: "$('APP_CONFIG').version" }, ctx));
     expect(res.result).toBe("1.2.3");
