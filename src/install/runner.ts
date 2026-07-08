@@ -9,6 +9,9 @@
  */
 export type Runner = "bunx" | "npx";
 
+/** The published package name the launcher resolves. */
+export const PACKAGE = "@mgvdev/nest-boost";
+
 export interface McpEntry {
   command: string;
   args: string[];
@@ -23,8 +26,8 @@ export function resolveRunner(preferred?: string): Runner {
 /** Build the MCP server entry for a runner. `npx` gets `-y` to avoid an install prompt. */
 export function mcpServerEntry(runner: Runner): McpEntry {
   return runner === "npx"
-    ? { command: "npx", args: ["-y", "nest-boost", "mcp"] }
-    : { command: "bunx", args: ["nest-boost", "mcp"] };
+    ? { command: "npx", args: ["-y", PACKAGE, "mcp"] }
+    : { command: "bunx", args: [PACKAGE, "mcp"] };
 }
 
 /** The launch command as a single string, e.g. for CLI-based registration hints. */

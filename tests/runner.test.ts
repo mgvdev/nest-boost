@@ -13,12 +13,12 @@ describe("runner", () => {
   });
 
   test("bunx entry launches the package directly", () => {
-    expect(mcpServerEntry("bunx")).toEqual({ command: "bunx", args: ["nest-boost", "mcp"] });
-    expect(mcpCommandString("bunx")).toBe("bunx nest-boost mcp");
+    expect(mcpServerEntry("bunx")).toEqual({ command: "bunx", args: ["@mgvdev/nest-boost", "mcp"] });
+    expect(mcpCommandString("bunx")).toBe("bunx @mgvdev/nest-boost mcp");
   });
 
   test("npx entry adds -y to avoid an install prompt", () => {
-    expect(mcpServerEntry("npx")).toEqual({ command: "npx", args: ["-y", "nest-boost", "mcp"] });
-    expect(mcpCommandString("npx")).toBe("npx -y nest-boost mcp");
+    expect(mcpServerEntry("npx")).toEqual({ command: "npx", args: ["-y", "@mgvdev/nest-boost", "mcp"] });
+    expect(mcpCommandString("npx")).toBe("npx -y @mgvdev/nest-boost mcp");
   });
 });

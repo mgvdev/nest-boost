@@ -41,7 +41,7 @@ describe("performInstall", () => {
     // MCP config
     const mcp = JSON.parse(readFileSync(join(dir, ".mcp.json"), "utf8"));
     expect(mcp.mcpServers["nest-boost"].command).toBe("bunx");
-    expect(mcp.mcpServers["nest-boost"].args).toEqual(["nest-boost", "mcp"]);
+    expect(mcp.mcpServers["nest-boost"].args).toEqual(["@mgvdev/nest-boost", "mcp"]);
 
     // Guidelines (Claude block + generic AGENTS.md)
     const claude = readFileSync(join(dir, "CLAUDE.md"), "utf8");

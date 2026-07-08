@@ -79,7 +79,7 @@ You may add supporting files (references, templates) in the same folder if usefu
 Propagate to every configured agent:
 
 ```bash
-npx nest-boost update
+npx @mgvdev/nest-boost update
 ```
 
 Then tell the user to commit `.nest-boost/skills/` (source of truth). The copies under

@@ -48,8 +48,8 @@ One command wires all of it into your agent of choice.
 ## Quick start
 
 ```bash
-bun add -d nest-boost
-npx nest-boost install
+bun add -d @mgvdev/nest-boost
+npx @mgvdev/nest-boost install
 ```
 
 `install` inspects your project and asks a few questions:
@@ -65,13 +65,13 @@ skills. Your agent now understands the project.
 Non-interactive (CI, scripts):
 
 ```bash
-npx nest-boost install --agents claude --arch hexagonal --auth better-auth --yes
+npx @mgvdev/nest-boost install --agents claude --arch hexagonal --auth better-auth --yes
 ```
 
 Keep everything fresh after dependency changes:
 
 ```bash
-npx nest-boost update
+npx @mgvdev/nest-boost update
 ```
 
 ## MCP server
@@ -107,7 +107,7 @@ manually:
 ```json
 {
   "mcpServers": {
-    "nest-boost": { "command": "npx", "args": ["-y", "nest-boost", "mcp"] }
+    "nest-boost": { "command": "npx", "args": ["-y", "@mgvdev/nest-boost", "mcp"] }
   }
 }
 ```
@@ -203,7 +203,7 @@ It is **enabled by default** but **blocked when `NODE_ENV=production`**. Turn it
 if you don't want it:
 
 ```bash
-npx nest-boost install --disable-evaluate
+npx @mgvdev/nest-boost install --disable-evaluate
 # or in nest-boost.json:
 { "evaluate": { "enabled": false } }
 ```
@@ -286,7 +286,7 @@ install options:
 ## How it works
 
 ```
-npx nest-boost install
+npx @mgvdev/nest-boost install
         │
         ├─ detect()            read package.json → ecosystem packages + versions
         ├─ prompt              architecture · auth · agents  (or flags)
@@ -294,7 +294,7 @@ npx nest-boost install
         ├─ resolve skills      baseline + gated + arch + auth + local (.nest-boost/skills)
         └─ per agent           write .mcp.json · guidelines · copy skills
 
-npx nest-boost mcp   (run by the agent)
+npx @mgvdev/nest-boost mcp   (run by the agent)
         │
         └─ NestFactory.create(AppModule, { preview: true, snapshot: true })
                  └─ ModulesContainer + reflection → application_info · list_routes · module_graph
