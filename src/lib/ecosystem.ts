@@ -45,6 +45,12 @@ export const ECOSYSTEM: EcosystemEntry[] = [
     skill: "graphql-development",
   },
   {
+    id: "orpc",
+    label: "oRPC",
+    match: ["@orpc/nest", "@orpc/contract"],
+    skill: "orpc-development",
+  },
+  {
     id: "typeorm",
     label: "TypeORM",
     match: ["@nestjs/typeorm", "typeorm"],
