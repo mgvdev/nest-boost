@@ -75,5 +75,5 @@ Provide a mock repository via the injection token:
 ```
 
 ## Ground yourself
-Use the `nest-boost` `module_graph` tool to confirm which module registers a given entity's
+Use the `nest-boost` `db_schema` tool to see the real database schema (after migrations) and `db_query` to sample rows read-only. Use the `nest-boost` `module_graph` tool to confirm which module registers a given entity's
 repository before injecting it elsewhere.

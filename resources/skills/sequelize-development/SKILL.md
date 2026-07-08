@@ -72,5 +72,5 @@ Provide a mocked model via its token:
 ```
 
 ## Ground yourself
-Use the `nest-boost` `module_graph` tool to confirm which module registers a model with
+Use the `nest-boost` `db_schema` tool to see the real database schema (after migrations) and `db_query` to sample rows read-only. Use the `nest-boost` `module_graph` tool to confirm which module registers a model with
 `forFeature` before injecting it.

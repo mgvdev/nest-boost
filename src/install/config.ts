@@ -26,6 +26,8 @@ export interface NestBoostConfig {
   architecture: string;
   /** Chosen auth strategy (none, passport, better-auth). */
   auth: string;
+  /** Optional database connection for the schema/query MCP tools. */
+  database?: { url?: string };
 }
 
 export const DEFAULT_CONFIG: NestBoostConfig = {
@@ -73,6 +75,7 @@ function migrate(parsed: Record<string, any>): NestBoostConfig {
     agents: parsed.agents ?? [],
     architecture: parsed.architecture ?? "standard",
     auth: parsed.auth ?? "none",
+    ...(parsed.database ? { database: parsed.database } : {}),
   };
 
   if (Array.isArray(parsed.projects) && parsed.projects.length > 0) {

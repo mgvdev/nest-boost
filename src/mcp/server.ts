@@ -2,12 +2,21 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { appInfoTool } from "./tools/app-info";
+import { dbQueryTool } from "./tools/db-query";
+import { dbSchemaTool } from "./tools/db-schema";
 import { graphTool } from "./tools/graph";
 import { nestCliTool } from "./tools/nest-cli";
 import { routesTool } from "./tools/routes";
 import type { McpTool, ToolContext } from "./tools/types";
 
-export const TOOLS: McpTool[] = [appInfoTool, routesTool, graphTool, nestCliTool];
+export const TOOLS: McpTool[] = [
+  appInfoTool,
+  routesTool,
+  graphTool,
+  nestCliTool,
+  dbSchemaTool,
+  dbQueryTool,
+];
 
 export function createServer(ctx: ToolContext): Server {
   const server = new Server(

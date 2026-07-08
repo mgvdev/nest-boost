@@ -85,5 +85,5 @@ Provide a mocked `PrismaService` (`{ provide: PrismaService, useValue: mock }`) 
 throwaway test database for integration tests.
 
 ## Ground yourself
-Use the `nest-boost` `module_graph` tool to confirm `PrismaModule`/`PrismaService` is
+Use the `nest-boost` `db_schema` tool to see the real database schema (after migrations) and `db_query` to sample rows read-only. Use the `nest-boost` `module_graph` tool to confirm `PrismaModule`/`PrismaService` is
 exported and imported where you inject it.

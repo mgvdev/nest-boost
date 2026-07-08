@@ -90,5 +90,5 @@ await this.em.transactional(async (em) => {
 Provide a mocked repository via its token: `{ provide: getRepositoryToken(Photo), useValue: mock }`.
 
 ## Ground yourself
-Use the `nest-boost` `module_graph` tool to confirm the entity's repository is registered in
+Use the `nest-boost` `db_schema` tool to see the real database schema (after migrations) and `db_query` to sample rows read-only. Use the `nest-boost` `module_graph` tool to confirm the entity's repository is registered in
 the module where you inject it.

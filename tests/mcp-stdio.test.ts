@@ -27,10 +27,17 @@ function firstText(result: any): string {
 }
 
 describe("nest-boost mcp (stdio, real subprocess)", () => {
-  test("exposes the four tools", async () => {
+  test("exposes the expected tools", async () => {
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
-    expect(names).toEqual(["application_info", "list_routes", "module_graph", "nest_cli"]);
+    expect(names).toEqual([
+      "application_info",
+      "db_query",
+      "db_schema",
+      "list_routes",
+      "module_graph",
+      "nest_cli",
+    ]);
   });
 
   test("application_info returns live introspection", async () => {
