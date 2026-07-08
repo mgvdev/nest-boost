@@ -2,8 +2,12 @@ import { afterAll, beforeEach, describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { existsSync } from "node:fs";
 import { resetEvaluateCache } from "../src/mcp/evaluate/boot-full";
 import { evaluateTool } from "../src/mcp/tools/evaluate";
+import { skillsForDetection } from "../src/install/writers/skills";
+import { detect } from "../src/install/detect";
+import { skillsDir } from "../src/lib/resources";
 
 const FIXTURE = join(import.meta.dir, "fixtures", "eval-app");
 const ctx = { projectRoot: FIXTURE };
@@ -42,6 +46,11 @@ describe("evaluate tool", () => {
   test("reports evaluation errors without crashing", async () => {
     const res = JSON.parse(await evaluateTool.run({ code: "return $(MathService).nope()" }, ctx));
     expect(res.error).toBeTruthy();
+  });
+
+  test("ships a baseline using-evaluate skill", () => {
+    expect(existsSync(join(skillsDir(), "using-evaluate", "SKILL.md"))).toBe(true);
+    expect(skillsForDetection(detect(FIXTURE))).toContain("using-evaluate");
   });
 
   test("is disabled unless enabled in config", async () => {

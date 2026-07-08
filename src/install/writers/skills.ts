@@ -11,7 +11,7 @@ import type { SkillsTarget } from "../agents/agent";
  * Skills always installed regardless of detected packages: the docs + development
  * baseline, plus the skill-builder generator so agents can grow the knowledge base.
  */
-const BASE_SKILLS = ["nestjs-development", "nestjs-docs", "skill-builder"];
+const BASE_SKILLS = ["nestjs-development", "nestjs-docs", "skill-builder", "using-evaluate"];
 
 /**
  * Project-local knowledge base. Custom skills (including agent-generated ones)
