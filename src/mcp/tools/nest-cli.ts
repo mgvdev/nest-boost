@@ -12,8 +12,8 @@ const ALLOWED = new Set(["generate", "g", "build", "info"]);
 function resolveNestBin(projectRoot: string): { cmd: string; prefix: string[] } {
   const local = join(projectRoot, "node_modules", ".bin", "nest");
   if (existsSync(local)) return { cmd: local, prefix: [] };
-  // Fall back to running the CLI via bunx without a local install.
-  return { cmd: "bunx", prefix: ["--bun", "@nestjs/cli"] };
+  // Fall back to running the CLI via npx without a local install.
+  return { cmd: "npx", prefix: ["-y", "@nestjs/cli"] };
 }
 
 async function nest(projectRoot: string, args: string[]): Promise<string> {

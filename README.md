@@ -49,7 +49,7 @@ One command wires all of it into your agent of choice.
 
 ```bash
 bun add -d nest-boost
-bunx nest-boost install
+npx nest-boost install
 ```
 
 `install` inspects your project and asks a few questions:
@@ -65,13 +65,13 @@ skills. Your agent now understands the project.
 Non-interactive (CI, scripts):
 
 ```bash
-bunx nest-boost install --agents claude --arch hexagonal --auth better-auth --yes
+npx nest-boost install --agents claude --arch hexagonal --auth better-auth --yes
 ```
 
 Keep everything fresh after dependency changes:
 
 ```bash
-bunx nest-boost update
+npx nest-boost update
 ```
 
 ## MCP server
@@ -101,15 +101,15 @@ manually:
 ```json
 {
   "mcpServers": {
-    "nest-boost": { "command": "bunx", "args": ["nest-boost", "mcp"] }
+    "nest-boost": { "command": "npx", "args": ["-y", "nest-boost", "mcp"] }
   }
 }
 ```
 
-The launcher is auto-detected at install: `bunx` when Bun's CLI is on `PATH`, otherwise
-`npx -y nest-boost mcp` (both honor the `#!/usr/bin/env bun` shebang). Force it with
-`--runner bunx|npx`. Either way, **Bun must be installed** — the MCP server imports your
-app's TypeScript and boots Nest, which needs a TS-capable runtime.
+The generated config uses `npx` by default; pass `--runner bunx` at install to use `bunx`
+instead (both honor the `#!/usr/bin/env bun` shebang). Either way, **Bun must be
+installed** — the MCP server imports your app's TypeScript and boots Nest, which needs a
+TS-capable runtime.
 
 ## Guidelines
 
@@ -242,7 +242,7 @@ install options:
   --arch <style>        Architecture style (standard,cqrs,hexagonal)
   --auth <strategy>     Auth strategy (none,passport,better-auth)
   --test-layout <id>    Test layout (colocated,colocated-subfolder,central)
-  --runner <bunx|npx>   MCP launcher for the generated config (default: auto-detect)
+  --runner <bunx|npx>   MCP launcher for the generated config (default: npx)
   --default-project <n> Monorepo: the app the MCP boots by default
   --fetch-auth-skill    Fetch the official community skill for the auth strategy
   --entry <path>        Single-app: root module file (default: src/app.module.ts)
@@ -253,7 +253,7 @@ install options:
 ## How it works
 
 ```
-bunx nest-boost install
+npx nest-boost install
         │
         ├─ detect()            read package.json → ecosystem packages + versions
         ├─ prompt              architecture · auth · agents  (or flags)
@@ -261,7 +261,7 @@ bunx nest-boost install
         ├─ resolve skills      baseline + gated + arch + auth + local (.nest-boost/skills)
         └─ per agent           write .mcp.json · guidelines · copy skills
 
-bunx nest-boost mcp   (run by the agent)
+npx nest-boost mcp   (run by the agent)
         │
         └─ NestFactory.create(AppModule, { preview: true, snapshot: true })
                  └─ ModulesContainer + reflection → application_info · list_routes · module_graph

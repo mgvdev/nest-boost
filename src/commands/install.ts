@@ -195,9 +195,6 @@ export async function runInstall(args: string[]): Promise<void> {
   const agents = flags.agents ?? (nonInteractive ? (presentDefaults.length ? presentDefaults : ["claude"]) : await promptAgents(presentDefaults));
 
   const runner = resolveRunner(flags.runner);
-  if (runner === "npx") {
-    log.warn("Bun CLI not detected — using `npx` to launch the MCP server. nest-boost still requires Bun to be installed to run.");
-  }
 
   const summary = performInstall(projectRoot, detection, { agents, projects, defaultProject, architecture, auth, testLayout, runner });
 

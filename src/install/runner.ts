@@ -3,9 +3,9 @@
  *
  * nest-boost requires Bun at runtime (the MCP server imports your app's
  * TypeScript modules and boots Nest), so the bin carries a `#!/usr/bin/env bun`
- * shebang. The launcher below only resolves/fetches the package — both `bunx`
- * and `npx` honor that shebang — so we prefer `bunx` and fall back to `npx` for
- * environments where Bun's CLI isn't on PATH.
+ * shebang. The launcher below only resolves/fetches the package — both `npx`
+ * and `bunx` honor that shebang — so we default to `npx` for the widest
+ * compatibility, with `bunx` available via an explicit choice.
  */
 export type Runner = "bunx" | "npx";
 
@@ -14,11 +14,10 @@ export interface McpEntry {
   args: string[];
 }
 
-/** Pick the launcher: an explicit choice, else `bunx` when Bun is present, else `npx`. */
+/** Pick the launcher: an explicit choice, else `npx` (the default). */
 export function resolveRunner(preferred?: string): Runner {
   if (preferred === "bunx" || preferred === "npx") return preferred;
-  const hasBun = typeof Bun !== "undefined" && !!Bun.which("bun");
-  return hasBun ? "bunx" : "npx";
+  return "npx";
 }
 
 /** Build the MCP server entry for a runner. `npx` gets `-y` to avoid an install prompt. */

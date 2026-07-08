@@ -7,9 +7,9 @@ describe("runner", () => {
     expect(resolveRunner("bunx")).toBe("bunx");
   });
 
-  test("auto-detects bunx when Bun is present (it is, under bun test)", () => {
-    expect(resolveRunner()).toBe("bunx");
-    expect(resolveRunner("garbage")).toBe("bunx");
+  test("defaults to npx", () => {
+    expect(resolveRunner()).toBe("npx");
+    expect(resolveRunner("garbage")).toBe("npx");
   });
 
   test("bunx entry launches the package directly", () => {

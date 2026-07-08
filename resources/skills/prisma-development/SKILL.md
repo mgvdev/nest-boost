@@ -17,7 +17,7 @@ Prisma changes fast (v7 shipped as ESM). Prefer docs over memory:
 ```bash
 bun add -d prisma
 bun add @prisma/client
-bunx prisma init
+npx prisma init
 ```
 
 ## Schema + client
@@ -41,8 +41,8 @@ model User {
 
 Migrate + regenerate the client after every schema change:
 ```bash
-bunx prisma migrate dev --name init
-bunx prisma generate
+npx prisma migrate dev --name init
+npx prisma generate
 ```
 
 ## PrismaService (single client, injectable)
