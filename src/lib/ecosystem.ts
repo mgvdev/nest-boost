@@ -74,6 +74,7 @@ export const ECOSYSTEM: EcosystemEntry[] = [
     label: "Mongoose",
     match: ["@nestjs/mongoose", "mongoose"],
     guideline: "mongoose.md",
+    skill: "mongoose-development",
   },
   {
     id: "prisma",

@@ -23,6 +23,7 @@ const CASES: Array<{ id: string; skill: string; pkg: string }> = [
   { id: "prisma", skill: "prisma-development", pkg: "@prisma/client" },
   { id: "sequelize", skill: "sequelize-development", pkg: "@nestjs/sequelize" },
   { id: "mikro-orm", skill: "mikro-orm-development", pkg: "@mikro-orm/nestjs" },
+  { id: "mongoose", skill: "mongoose-development", pkg: "@nestjs/mongoose" },
 ];
 
 describe("ORM skills", () => {
