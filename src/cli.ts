@@ -17,6 +17,7 @@ Install options:
   --test-layout <id>     Test layout (colocated,colocated-subfolder,central)
   --runner <bunx|npx>    MCP launcher for the generated config (default: npx)
   --default-project <n>  Monorepo: the app the MCP boots by default
+  --enable-evaluate      Enable the 'evaluate' REPL tool (boots the app, runs arbitrary code)
   --fetch-auth-skill     Fetch the official community skill for the auth strategy (e.g. Better Auth)
   --yes                  Accept defaults, skip prompts
 `;

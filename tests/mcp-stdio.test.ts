@@ -34,6 +34,7 @@ describe("nest-boost mcp (stdio, real subprocess)", () => {
       "application_info",
       "db_query",
       "db_schema",
+      "evaluate",
       "list_routes",
       "module_graph",
       "nest_cli",

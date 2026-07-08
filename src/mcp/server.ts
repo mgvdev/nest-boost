@@ -4,6 +4,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprot
 import { appInfoTool } from "./tools/app-info";
 import { dbQueryTool } from "./tools/db-query";
 import { dbSchemaTool } from "./tools/db-schema";
+import { evaluateTool } from "./tools/evaluate";
 import { graphTool } from "./tools/graph";
 import { nestCliTool } from "./tools/nest-cli";
 import { routesTool } from "./tools/routes";
@@ -16,6 +17,7 @@ export const TOOLS: McpTool[] = [
   nestCliTool,
   dbSchemaTool,
   dbQueryTool,
+  evaluateTool,
 ];
 
 export function createServer(ctx: ToolContext): Server {

@@ -90,6 +90,7 @@ application.
 | `nest_cli` | List and run whitelisted `nest` CLI commands (`generate`, `build`, `info`) |
 | `db_schema` | Read the database schema — SQL tables/columns/keys, or MongoDB collections with sampled fields |
 | `db_query` | Run a **read-only** query (SELECT/WITH/… for SQL, or a MongoDB `find`) and return rows |
+| `evaluate` | REPL/Tinker-style: run a snippet in the booted app (`await $(UsersService).findAll()`). **Opt-in** — real boot, arbitrary code |
 
 In a **monorepo**, `list_routes` and `module_graph` accept a `project` argument to target a
 specific application (omitted → the workspace default project); `application_info` lists
@@ -174,6 +175,33 @@ db_schema {}                                       // all tables/collections
 db_query  { "sql": "SELECT id, email FROM users LIMIT 10" }
 db_query  { "collection": "users", "filter": { "active": true } }   // MongoDB
 ```
+
+## `evaluate` — REPL / Tinker for the agent
+
+Like Laravel Tinker, `evaluate` runs a snippet **inside your booted app** and returns the
+result. `get(Token)` / `$(Token)` resolve a provider, and every provider/controller class is
+available by name:
+
+```jsonc
+evaluate { "code": "await $(UsersService).findAll()" }
+evaluate { "code": "const s = $(BillingService); return s.total(42);" }
+```
+
+Built on `NestFactory.createApplicationContext` (DI + lifecycle, no HTTP), TypeScript is
+transpiled, `await` is supported, and the result is serialized safely (depth-limited,
+circular-safe).
+
+**It is opt-in and unguarded by design.** Unlike the other tools it boots the app *for real*
+(lifecycle hooks + live DB/network) and runs *arbitrary code* — it can mutate data. Enable it
+deliberately:
+
+```bash
+npx nest-boost install --enable-evaluate
+# or in nest-boost.json:
+{ "evaluate": { "enabled": true } }
+```
+
+Disabled by default; the tool returns a clear error until you turn it on.
 
 ## Monorepo workspaces
 

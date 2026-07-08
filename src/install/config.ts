@@ -30,6 +30,8 @@ export interface NestBoostConfig {
   testLayout: string;
   /** Optional database connection for the schema/query MCP tools. */
   database?: { url?: string };
+  /** Opt-in for the `evaluate` tool (boots the app for real, runs arbitrary code). */
+  evaluate?: { enabled?: boolean };
 }
 
 export const DEFAULT_CONFIG: NestBoostConfig = {
@@ -80,6 +82,7 @@ function migrate(parsed: Record<string, any>): NestBoostConfig {
     auth: parsed.auth ?? "none",
     testLayout: parsed.testLayout ?? "colocated",
     ...(parsed.database ? { database: parsed.database } : {}),
+    ...(parsed.evaluate ? { evaluate: parsed.evaluate } : {}),
   };
 
   if (Array.isArray(parsed.projects) && parsed.projects.length > 0) {

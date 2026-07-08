@@ -1,0 +1,11 @@
+{
+  "projects": [
+    { "name": "app", "type": "application", "root": ".", "entryModule": "src/app.module.ts", "moduleExport": "AppModule" }
+  ],
+  "defaultProject": "app",
+  "agents": ["claude"],
+  "architecture": "standard",
+  "auth": "none",
+  "testLayout": "colocated",
+  "evaluate": { "enabled": true }
+}
