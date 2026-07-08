@@ -2,9 +2,9 @@ import { describe, expect, test } from "bun:test";
 import { printBanner, renderWord } from "../src/install/banner";
 
 describe("banner", () => {
-  test("renders a 5-row aligned wordmark", () => {
+  test("renders a 6-row aligned wordmark", () => {
     const rows = renderWord("NEST-BOOST");
-    expect(rows).toHaveLength(5);
+    expect(rows).toHaveLength(6);
     for (const r of rows) expect(r.length).toBeGreaterThan(0);
     // block-drawing characters present
     expect(rows.join("")).toContain("█");
