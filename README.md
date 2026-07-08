@@ -40,6 +40,9 @@ It's the NestJS counterpart to [Laravel Boost](https://github.com/laravel/boost)
 
 One command wires all of it into your agent of choice.
 
+📚 **Full documentation:** [`documentation/`](./documentation/README.md) — CLI, configuration,
+MCP tools, database tools, `evaluate`, guidelines & skills, extending.
+
 ## Requirements
 
 - [Node.js](https://nodejs.org) `>= 18.18`
