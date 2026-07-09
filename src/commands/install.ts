@@ -4,8 +4,9 @@ import { printBanner } from "../install/banner";
 import { saveConfig, type NestBoostConfig, type ProjectConfig } from "../install/config";
 import { detect, isNestProject, type Detection } from "../install/detect";
 import { findEntryModule, findEntryModuleIn } from "../install/entry";
-import { agentById, AGENTS, type Agent } from "../install/agents/agent";
+import { agentById, AGENTS, MCP_SERVER_KEY, type Agent } from "../install/agents/agent";
 import { DEFAULT_ARCHITECTURE } from "../install/architectures";
+import { discoverPackageMcpServers } from "../install/third-party";
 import { authById, defaultAuthFor } from "../install/auth";
 import { fetchOfficialSkill } from "../install/fetch-skill";
 import { promptAgents, promptArchitecture, promptAuth, promptConfirm, promptDefaultProject, promptEntryModule, promptTestLayout } from "../install/prompt";
@@ -13,7 +14,7 @@ import { DEFAULT_TEST_LAYOUT } from "../install/test-layout";
 import { mcpCommandString, mcpServerEntry, resolveRunner, type Runner } from "../install/runner";
 import type { Selection } from "../install/selection";
 import { composeGuidelines, writeGuidelines } from "../install/writers/guidelines";
-import { writeMcpConfig } from "../install/writers/mcp-config";
+import { mergeMcpServer, writeMcpConfig } from "../install/writers/mcp-config";
 import { copySkills, resolveSkills } from "../install/writers/skills";
 
 export interface InstallOptions {
@@ -35,6 +36,8 @@ export interface InstallSummary {
   filesWritten: string[];
   skills: string[];
   hints: string[];
+  /** Keys of MCP servers contributed by installed packages. */
+  packageServers: string[];
 }
 
 /** Pure install: writes MCP config, guidelines, and skills for the chosen agents. */
@@ -53,13 +56,22 @@ export function performInstall(
 
   const mcpEntry = mcpServerEntry(options.runner);
   const mcpCommand = mcpCommandString(options.runner);
+  const pkgServers = discoverPackageMcpServers(projectRoot);
 
   for (const id of options.agents) {
     const agent = agentById(id);
     if (!agent) continue;
 
-    if (agent.mcp) filesWritten.push(writeMcpConfig(projectRoot, agent.mcp, mcpEntry));
-    if (agent.mcpHint) hints.push(agent.mcpHint(mcpCommand));
+    if (agent.mcp) {
+      filesWritten.push(writeMcpConfig(projectRoot, agent.mcp, mcpEntry));
+      for (const srv of pkgServers) mergeMcpServer(projectRoot, agent.mcp.file, srv.key, srv.entry);
+    }
+    if (agent.mcpHint) {
+      hints.push(agent.mcpHint(mcpCommand, MCP_SERVER_KEY));
+      for (const srv of pkgServers) {
+        hints.push(agent.mcpHint([srv.entry.command, ...srv.entry.args].join(" "), srv.key));
+      }
+    }
     if (agent.guidelines) filesWritten.push(writeGuidelines(projectRoot, agent.guidelines, guidelines));
     if (agent.skills) {
       for (const name of copySkills(projectRoot, agent.skills, skills)) {
@@ -90,6 +102,7 @@ export function performInstall(
     filesWritten: [...new Set(filesWritten)],
     skills: [...installedSkills],
     hints: [...new Set(hints)],
+    packageServers: pkgServers.map((s) => s.key),
   };
 }
 
@@ -217,6 +230,7 @@ export async function runInstall(args: string[]): Promise<void> {
       `Agents:  ${summary.agents.join(", ")}`,
       `Files:   ${summary.filesWritten.join(", ")}`,
       summary.skills.length ? `Skills:  ${summary.skills.join(", ")}` : "",
+      summary.packageServers.length ? `MCP:     ${summary.packageServers.join(", ")} (from packages)` : "",
     ].filter(Boolean).join("\n"),
     "Installed",
   );

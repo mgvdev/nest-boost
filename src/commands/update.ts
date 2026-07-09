@@ -2,7 +2,9 @@ import { intro, log, note, outro } from "@clack/prompts";
 import { loadConfig } from "../install/config";
 import { detect } from "../install/detect";
 import { agentById } from "../install/agents/agent";
+import { discoverPackageMcpServers } from "../install/third-party";
 import { composeGuidelines, writeGuidelines } from "../install/writers/guidelines";
+import { mergeMcpServer } from "../install/writers/mcp-config";
 import { copySkills, resolveSkills } from "../install/writers/skills";
 
 /**
@@ -23,6 +25,7 @@ export async function runUpdate(_args: string[]): Promise<void> {
   const selection = { architecture: config.architecture, auth: config.auth, testLayout: config.testLayout };
   const guidelines = composeGuidelines(detection, selection);
   const skills = resolveSkills(projectRoot, detection, selection);
+  const pkgServers = discoverPackageMcpServers(projectRoot);
   const written: string[] = [];
 
   for (const id of config.agents) {
@@ -34,11 +37,20 @@ export async function runUpdate(_args: string[]): Promise<void> {
         written.push(`${agent.skills.dir}/${name}`);
       }
     }
+    // Pick up MCP servers newly exposed by installed packages (nest-boost's own
+    // server is left untouched — it was written at install with the chosen runner).
+    if (agent.mcp) {
+      for (const srv of pkgServers) {
+        mergeMcpServer(projectRoot, agent.mcp.file, srv.key, srv.entry);
+        written.push(`${agent.mcp.file}#${srv.key}`);
+      }
+    }
   }
 
   note(
-    `Agents: ${config.agents.join(", ")}\nUpdated: ${[...new Set(written)].join(", ") || "(nothing)"}`,
+    `Agents: ${config.agents.join(", ")}\nUpdated: ${[...new Set(written)].join(", ") || "(nothing)"}` +
+      (pkgServers.length ? `\nPackage MCP servers: ${pkgServers.map((s) => s.key).join(", ")}` : ""),
     "Resynced",
   );
-  outro("Guidelines and skills are up to date.");
+  outro("Guidelines, skills, and MCP servers are up to date.");
 }

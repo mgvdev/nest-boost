@@ -40,9 +40,9 @@ export interface Agent {
   mcp?: McpConfigTarget;
   /**
    * Shown as a next step when MCP is registered via a CLI rather than a file.
-   * Receives the resolved launch command (e.g. "bunx nest-boost mcp").
+   * Receives the resolved launch command and the server name to register.
    */
-  mcpHint?: (command: string) => string;
+  mcpHint?: (command: string, name: string) => string;
   guidelines?: GuidelinesTarget;
   skills?: SkillsTarget;
 }
@@ -76,7 +76,7 @@ export const AGENTS: Agent[] = [
     label: "Codex",
     isPresent: (root) => has(root, ".codex", "AGENTS.md"),
     guidelines: { file: "AGENTS.md", mode: "block" },
-    mcpHint: (command) => `codex mcp add nest-boost -- ${command}`,
+    mcpHint: (command, name) => `codex mcp add ${name} -- ${command}`,
   },
   {
     id: "gemini",

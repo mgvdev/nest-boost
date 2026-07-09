@@ -13,7 +13,20 @@ export function writeMcpConfig(
   target: McpConfigTarget,
   entry: McpEntry,
 ): string {
-  const path = join(projectRoot, target.file);
+  return mergeMcpServer(projectRoot, target.file, MCP_SERVER_KEY, entry);
+}
+
+/**
+ * Merge a single named server into an MCP config file. Used for nest-boost's own
+ * server and for MCP servers exposed by third-party packages.
+ */
+export function mergeMcpServer(
+  projectRoot: string,
+  file: string,
+  key: string,
+  entry: McpEntry,
+): string {
+  const path = join(projectRoot, file);
   mkdirSync(dirname(path), { recursive: true });
 
   let config: Record<string, any> = {};
@@ -26,8 +39,8 @@ export function writeMcpConfig(
   }
 
   config.mcpServers ??= {};
-  config.mcpServers[MCP_SERVER_KEY] = { command: entry.command, args: [...entry.args] };
+  config.mcpServers[key] = { command: entry.command, args: [...entry.args] };
 
   writeFileSync(path, JSON.stringify(config, null, 2) + "\n");
-  return target.file;
+  return file;
 }

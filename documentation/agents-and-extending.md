@@ -51,6 +51,25 @@ Bundle a skill in your library and declare it (see
 { "nestBoost": { "skills": ["skill"] } }
 ```
 
+### Ship an MCP server from your own package
+
+A package can expose its **own MCP server** and have nest-boost register it into each configured
+agent's MCP config (alongside nest-boost's server), so its tools sit next to the built-in ones.
+Declare it in the package's `package.json`:
+
+```json
+{ "nestBoost": { "mcp": { "command": "npx", "args": ["-y", "@scope/pkg", "mcp"] } } }
+```
+
+A single object registers one server (keyed by `name`, else the package's short name); a map
+`{ "<key>": { command, args } }` registers several. `nest-boost install` writes them, and
+`nest-boost update` picks up servers from newly-added packages. This keeps each tool set in its
+own process, versioned by its own package — nest-boost only wires the config.
+
+Example: [NestKit](https://nestjs.mgvdev.io/nestkit) can ship `nestkit mcp` (a dependency-graph
+tool over `nestkit graph --json`); declaring `nestBoost.mcp` makes it appear in the agent
+automatically for NestKit workspaces.
+
 ### Add a custom skill to a single project
 
 Drop a `SKILL.md` in `.nest-boost/skills/<name>/` and run `nest-boost update`. See the

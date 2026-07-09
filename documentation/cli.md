@@ -45,8 +45,9 @@ npx @mgvdev/nest-boost install --agents claude --default-project api --yes
 
 ## `update`
 
-Re-composes guidelines and re-copies skills for the agents already recorded in
-`nest-boost.json`. No prompts. Intended for a `postinstall` / CI hook:
+Re-composes guidelines, re-copies skills, and registers MCP servers exposed by newly-installed
+packages (`nestBoost.mcp`) for the agents already recorded in `nest-boost.json`. No prompts —
+this is the "sync after adding a package" command. Intended for a `postinstall` / CI hook:
 
 ```json
 { "scripts": { "postinstall": "nest-boost update" } }

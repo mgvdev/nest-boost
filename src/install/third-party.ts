@@ -57,6 +57,57 @@ export function discoverPackageSkills(projectRoot: string): ResolvedSkill[] {
   return out;
 }
 
+export interface PackageMcpServer {
+  /** The key the server is registered under in `mcpServers`. */
+  key: string;
+  entry: { command: string; args: string[] };
+}
+
+/**
+ * Discover MCP servers exposed by installed dependencies. A package opts in with
+ * a `package.json` field:
+ *
+ *   "nestBoost": { "mcp": { "command": "npx", "args": ["-y", "@scope/pkg", "mcp"] } }
+ *
+ * A single object registers one server (keyed by `name`, else the package's short
+ * name); a map registers several (`{ "<key>": { command, args } }`). nest-boost
+ * writes these into each configured agent's MCP config alongside its own server.
+ */
+export function discoverPackageMcpServers(projectRoot: string): PackageMcpServer[] {
+  const pkg = readPackageJson(projectRoot);
+  if (!pkg) return [];
+
+  const out: PackageMcpServer[] = [];
+  const seen = new Set<string>();
+
+  for (const dep of Object.keys(allDependencies(pkg))) {
+    const depDir = join(projectRoot, "node_modules", ...dep.split("/"));
+    if (!existsSync(depDir)) continue;
+    const nb = (readPackageJson(depDir) as Record<string, any> | null)?.nestBoost?.mcp;
+    if (!nb || typeof nb !== "object") continue;
+
+    if (typeof nb.command === "string") {
+      pushServer(out, seen, nb.name ?? shortName(dep), nb);
+    } else {
+      for (const [key, srv] of Object.entries(nb as Record<string, any>)) {
+        if (srv && typeof srv.command === "string") pushServer(out, seen, key, srv);
+      }
+    }
+  }
+
+  return out;
+}
+
+function pushServer(out: PackageMcpServer[], seen: Set<string>, key: string, srv: any): void {
+  if (!key || seen.has(key) || typeof srv.command !== "string") return;
+  seen.add(key);
+  out.push({ key, entry: { command: srv.command, args: Array.isArray(srv.args) ? srv.args.map(String) : [] } });
+}
+
+function shortName(dep: string): string {
+  return dep.split("/").pop() ?? dep;
+}
+
 function add(out: ResolvedSkill[], seen: Set<string>, name: string, src: string): void {
   if (seen.has(name)) return;
   seen.add(name);

@@ -4,8 +4,17 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { performInstall } from "../src/commands/install";
 import { detect } from "../src/install/detect";
-import { discoverPackageSkills } from "../src/install/third-party";
+import { discoverPackageMcpServers, discoverPackageSkills } from "../src/install/third-party";
 import { resolveSkills } from "../src/install/writers/skills";
+
+const INSTALL_BASE = {
+  agents: ["claude"],
+  projects: [{ name: "app", type: "application" as const, root: ".", entryModule: "src/app.module.ts", moduleExport: "AppModule" }],
+  defaultProject: "app",
+  architecture: "standard",
+  auth: "none",
+  runner: "bunx" as const,
+};
 
 const dirs: string[] = [];
 afterEach(() => {
@@ -57,6 +66,26 @@ describe("third-party package skills", () => {
     const copied = join(root, ".claude/skills/nestjs-ai/SKILL.md");
     expect(existsSync(copied)).toBe(true);
     expect(readFileSync(copied, "utf8")).toContain("MARKER_nestjs-ai");
+  });
+
+  test("discovers an MCP server declared via nestBoost.mcp", () => {
+    const root = makeProjectWithDep("@mgvdev/nestkit-cli", "skill", "nestkit", {
+      nestBoost: { mcp: { command: "npx", args: ["-y", "@mgvdev/nestkit-cli", "mcp"] } },
+    });
+    const servers = discoverPackageMcpServers(root);
+    expect(servers.map((s) => s.key)).toContain("nestkit-cli");
+    expect(servers[0].entry.command).toBe("npx");
+  });
+
+  test("install writes package MCP servers alongside nest-boost's", () => {
+    const root = makeProjectWithDep("@mgvdev/nestkit-cli", "skill", "nestkit", {
+      nestBoost: { mcp: { name: "nestkit", command: "npx", args: ["-y", "@mgvdev/nestkit-cli", "mcp"] } },
+    });
+    const summary = performInstall(root, detect(root), INSTALL_BASE);
+    const mcp = JSON.parse(readFileSync(join(root, ".mcp.json"), "utf8"));
+    expect(mcp.mcpServers["nest-boost"]).toBeDefined();
+    expect(mcp.mcpServers["nestkit"].args).toEqual(["-y", "@mgvdev/nestkit-cli", "mcp"]);
+    expect(summary.packageServers).toContain("nestkit");
   });
 
   test("ignores dependencies without a bundled skill", () => {
