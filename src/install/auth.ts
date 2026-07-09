@@ -36,7 +36,7 @@ export const AUTH_STRATEGIES: AuthStrategy[] = [
     description: "better-auth via @thallesp/nestjs-better-auth: AuthModule + session decorators.",
     guideline: "auth/better-auth.md",
     skill: "auth-better-auth",
-    fetchSkillCommand: "npx skills add better-auth/skills",
+    fetchSkillCommand: "npx -y skills add better-auth/skills",
   },
 ];
 

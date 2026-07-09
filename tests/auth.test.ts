@@ -68,7 +68,7 @@ describe("auth strategy selection", () => {
     expect(existsSync(join(dir, ".claude/skills/auth-passport"))).toBe(false);
 
     // The official-skill fetch command is surfaced as a hint.
-    expect(summary.hints.some((h) => h.includes("npx skills add better-auth/skills"))).toBe(true);
+    expect(summary.hints.some((h) => h.includes("skills add better-auth/skills"))).toBe(true);
 
     const config = JSON.parse(readFileSync(join(dir, "nest-boost.json"), "utf8"));
     expect(config.auth).toBe("better-auth");
