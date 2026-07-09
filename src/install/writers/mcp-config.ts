@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { MCP_SERVER_KEY, type McpConfigTarget } from "../agents/agent";
+import { MCP_SERVER_KEY, type McpConfigTarget, type McpFormat } from "../agents/agent";
 import type { McpEntry } from "../runner";
 
 /**
@@ -13,18 +13,20 @@ export function writeMcpConfig(
   target: McpConfigTarget,
   entry: McpEntry,
 ): string {
-  return mergeMcpServer(projectRoot, target.file, MCP_SERVER_KEY, entry);
+  return mergeMcpServer(projectRoot, target.file, MCP_SERVER_KEY, entry, target.format);
 }
 
 /**
- * Merge a single named server into an MCP config file. Used for nest-boost's own
- * server and for MCP servers exposed by third-party packages.
+ * Merge a single named server into an MCP config file, in the file's layout.
+ * Used for nest-boost's own server and for servers exposed by third-party
+ * packages. Existing servers and unrelated keys are preserved.
  */
 export function mergeMcpServer(
   projectRoot: string,
   file: string,
   key: string,
   entry: McpEntry,
+  format: McpFormat = "mcpServers",
 ): string {
   const path = join(projectRoot, file);
   mkdirSync(dirname(path), { recursive: true });
@@ -38,8 +40,13 @@ export function mergeMcpServer(
     }
   }
 
-  config.mcpServers ??= {};
-  config.mcpServers[key] = { command: entry.command, args: [...entry.args] };
+  if (format === "opencode") {
+    config.mcp ??= {};
+    config.mcp[key] = { type: "local", command: [entry.command, ...entry.args], enabled: true };
+  } else {
+    config.mcpServers ??= {};
+    config.mcpServers[key] = { command: entry.command, args: [...entry.args] };
+  }
 
   writeFileSync(path, JSON.stringify(config, null, 2) + "\n");
   return file;

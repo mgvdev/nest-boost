@@ -11,7 +11,7 @@ Options:
   -v, --version          Show version
 
 Install options:
-  --agents <a,b>         Preselect agents non-interactively (claude,cursor,codex,gemini,generic)
+  --agents <a,b>         Preselect agents (claude,cursor,codex,gemini,opencode,generic)
   --arch <style>         Architecture style (standard,cqrs,hexagonal)
   --auth <strategy>      Auth strategy (none,passport,better-auth)
   --test-layout <id>     Test layout (colocated,colocated-subfolder,central)

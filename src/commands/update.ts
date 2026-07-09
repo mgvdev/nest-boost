@@ -41,7 +41,7 @@ export async function runUpdate(_args: string[]): Promise<void> {
     // server is left untouched — it was written at install with the chosen runner).
     if (agent.mcp) {
       for (const srv of pkgServers) {
-        mergeMcpServer(projectRoot, agent.mcp.file, srv.key, srv.entry);
+        mergeMcpServer(projectRoot, agent.mcp.file, srv.key, srv.entry, agent.mcp.format);
         written.push(`${agent.mcp.file}#${srv.key}`);
       }
     }

@@ -8,7 +8,14 @@
 | Cursor | `.cursor/mcp.json` | `.cursor/rules/nest-boost.mdc` | — |
 | Codex | *(CLI: `codex mcp add …`)* | `AGENTS.md` | — |
 | Gemini CLI | `.gemini/settings.json` | `AGENTS.md` | — |
+| opencode | `opencode.json` | `AGENTS.md` | — |
 | Generic | `.mcp.json` | `AGENTS.md` | — |
+
+Different agents use different MCP config layouts. Most use the `{ "mcpServers": { name: {
+command, args } } }` shape; **opencode** uses `{ "mcp": { name: { type: "local", command:
+[cmd, ...args], enabled } } }` in `opencode.json`. The MCP writer picks the layout per agent
+(`McpConfigTarget.format`), so a config generated for one agent won't work for another with a
+different schema.
 
 `install` prompts which to configure (defaulting to the ones already present in the project).
 

@@ -4,9 +4,18 @@ import { join } from "node:path";
 /** The key every agent registers the nest-boost MCP server under. */
 export const MCP_SERVER_KEY = "nest-boost";
 
+/**
+ * MCP config file layout. `mcpServers` — the `{ "mcpServers": { name: { command,
+ * args } } }` shape (Claude Code, Cursor, Gemini, generic). `opencode` — opencode's
+ * `{ "mcp": { name: { type: "local", command: [cmd, ...args], enabled } } }` shape.
+ */
+export type McpFormat = "mcpServers" | "opencode";
+
 export interface McpConfigTarget {
   /** Project-relative JSON file to merge the server entry into. */
   file: string;
+  /** File layout; defaults to "mcpServers". */
+  format?: McpFormat;
 }
 
 export interface GuidelinesTarget {
@@ -83,6 +92,13 @@ export const AGENTS: Agent[] = [
     label: "Gemini CLI",
     isPresent: (root) => has(root, ".gemini"),
     mcp: { file: ".gemini/settings.json" },
+    guidelines: { file: "AGENTS.md", mode: "block" },
+  },
+  {
+    id: "opencode",
+    label: "opencode",
+    isPresent: (root) => has(root, "opencode.json", "opencode.jsonc", ".opencode"),
+    mcp: { file: "opencode.json", format: "opencode" },
     guidelines: { file: "AGENTS.md", mode: "block" },
   },
   {

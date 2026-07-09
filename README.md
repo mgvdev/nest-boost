@@ -258,6 +258,7 @@ A single-app project needs no configuration — it's treated as a workspace of o
 | Cursor | `.cursor/mcp.json` | `.cursor/rules/` | — |
 | Codex | *(CLI)* | `AGENTS.md` | — |
 | Gemini CLI | `.gemini/settings.json` | `AGENTS.md` | — |
+| opencode | `opencode.json` (`mcp` / `type:local`) | `AGENTS.md` | — |
 | Generic | `.mcp.json` | `AGENTS.md` | — |
 
 Adding another agent is a single object in `src/install/agents/agent.ts`.

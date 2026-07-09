@@ -64,7 +64,9 @@ export function performInstall(
 
     if (agent.mcp) {
       filesWritten.push(writeMcpConfig(projectRoot, agent.mcp, mcpEntry));
-      for (const srv of pkgServers) mergeMcpServer(projectRoot, agent.mcp.file, srv.key, srv.entry);
+      for (const srv of pkgServers) {
+        mergeMcpServer(projectRoot, agent.mcp.file, srv.key, srv.entry, agent.mcp.format);
+      }
     }
     if (agent.mcpHint) {
       hints.push(agent.mcpHint(mcpCommand, MCP_SERVER_KEY));
