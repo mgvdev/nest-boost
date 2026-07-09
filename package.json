@@ -1,6 +1,6 @@
 {
   "name": "@mgvdev/nest-boost",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Laravel Boost for NestJS — MCP server, AI guidelines, and agent skills that teach coding agents your Nest app.",
   "type": "module",
   "license": "MIT",
