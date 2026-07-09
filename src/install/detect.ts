@@ -6,7 +6,8 @@ import {
   resolveInstalledVersion,
   type PackageJson,
 } from "../lib/pkg";
-import { readWorkspace, type ProjectMeta } from "./nest-cli";
+import { readWorkspace, type ProjectMeta, type WorkspaceEngine } from "./nest-cli";
+import { readNestkitWorkspace } from "./nestkit";
 
 export interface DetectedPackage {
   name: string;
@@ -26,8 +27,10 @@ export interface Detection {
   packages: DetectedPackage[];
   /** Ecosystem entries whose match hit this project. */
   entries: EcosystemEntry[];
-  /** True when nest-cli.json declares a monorepo workspace. */
+  /** True when the project is a monorepo workspace (nest-cli.json or NestKit). */
   monorepo: boolean;
+  /** Which engine declares the workspace. */
+  workspaceEngine?: WorkspaceEngine;
   /** Workspace projects (empty for a single-app project). */
   projects: ProjectMeta[];
   /** Default workspace project name, if any. */
@@ -59,7 +62,13 @@ export function detect(projectRoot: string): Detection {
   }
 
   const nestVersion = resolveInstalledVersion(projectRoot, "@nestjs/core", deps["@nestjs/core"]);
-  const workspace = readWorkspace(projectRoot);
+
+  // Prefer nest-cli.json; fall back to a NestKit workspace when that isn't a monorepo.
+  let workspace = readWorkspace(projectRoot);
+  if (!workspace.monorepo) {
+    const nestkit = readNestkitWorkspace(projectRoot);
+    if (nestkit.monorepo) workspace = nestkit;
+  }
 
   return {
     projectRoot,
@@ -72,6 +81,7 @@ export function detect(projectRoot: string): Detection {
     packages,
     entries,
     monorepo: workspace.monorepo,
+    workspaceEngine: workspace.engine,
     projects: workspace.projects,
     defaultProject: workspace.defaultProject,
   };

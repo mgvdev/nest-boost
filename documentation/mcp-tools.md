@@ -19,8 +19,10 @@ connections — safe against a production app. (`evaluate` is the exception; see
 ## `application_info`
 
 No required arguments. Returns project name/version, Node/Nest versions, detected ecosystem
-packages with versions, the workspace (`monorepo`, `projects`, `defaultProject`), and counts of
-modules/controllers/providers/routes for one application.
+packages with versions, the workspace (`monorepo`, `workspaceEngine`, `projects`,
+`defaultProject`), and counts of modules/controllers/providers/routes for one application. The
+workspace is detected from `nest-cli.json` **or** a [NestKit](https://nestjs.mgvdev.io/nestkit)
+workspace (`@mgvdev/nestkit-*` + per-package `nestkit.json`).
 
 - `project` *(optional)* — in a monorepo, which application to count. Defaults to the workspace
   default project.

@@ -11,10 +11,14 @@ export interface ProjectMeta {
   entryFile: string;
 }
 
+export type WorkspaceEngine = "nest-cli" | "nestkit";
+
 export interface Workspace {
-  /** True when nest-cli.json declares a monorepo with a projects map. */
+  /** True when the project is a monorepo workspace. */
   monorepo: boolean;
-  /** Name of the default project (nest build/start use it when none is given). */
+  /** Which engine declares the workspace (nest-cli.json or NestKit). */
+  engine?: WorkspaceEngine;
+  /** Name of the default project (the app the MCP boots when none is given). */
   defaultProject?: string;
   projects: ProjectMeta[];
 }
@@ -60,6 +64,7 @@ export function readWorkspace(projectRoot: string): Workspace {
 
   return {
     monorepo: cli.monorepo === true || projects.length > 1,
+    engine: "nest-cli",
     defaultProject,
     projects,
   };

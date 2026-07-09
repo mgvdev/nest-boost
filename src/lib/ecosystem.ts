@@ -51,6 +51,12 @@ export const ECOSYSTEM: EcosystemEntry[] = [
     skill: "orpc-development",
   },
   {
+    id: "nestkit",
+    label: "NestKit",
+    match: ["@mgvdev/nestkit-cli", "@mgvdev/nestkit-core"],
+    skill: "nestkit-development",
+  },
+  {
     id: "typeorm",
     label: "TypeORM",
     match: ["@nestjs/typeorm", "typeorm"],

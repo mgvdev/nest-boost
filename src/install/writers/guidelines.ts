@@ -43,7 +43,8 @@ export function composeGuidelines(detection: Detection, selection: Selection = {
   }
 
   if (detection.monorepo) {
-    const monorepo = readGuideline("monorepo.md");
+    const file = detection.workspaceEngine === "nestkit" ? "monorepo-nestkit.md" : "monorepo.md";
+    const monorepo = readGuideline(file);
     if (monorepo) sections.push(monorepo);
   }
 

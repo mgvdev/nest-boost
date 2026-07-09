@@ -184,7 +184,8 @@ export async function runInstall(args: string[]): Promise<void> {
   if (detection.monorepo) {
     const apps = detection.projects.filter((p) => p.type === "application").length;
     const libs = detection.projects.filter((p) => p.type === "library").length;
-    log.info(`Monorepo workspace: ${apps} app(s), ${libs} lib(rary/ies).`);
+    const engine = detection.workspaceEngine === "nestkit" ? "NestKit" : "nest-cli";
+    log.info(`Monorepo workspace (${engine}): ${apps} app(s), ${libs} lib(rary/ies).`);
   }
 
   const { projects, defaultProject } = await resolveProjects(projectRoot, detection, flags, nonInteractive);

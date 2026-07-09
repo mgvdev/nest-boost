@@ -231,9 +231,10 @@ npx @mgvdev/nest-boost install --disable-evaluate
 ## Monorepo workspaces
 
 nest-boost understands [NestJS monorepos](https://docs.nestjs.com/cli/monorepo) (`nest-cli.json`
-with `"monorepo": true`). `install` reads every project from `nest-cli.json` — each
-application and library — and records them in `nest-boost.json`. The MCP then introspects
-**any application on demand**:
+with `"monorepo": true`) **and** [NestKit](https://nestjs.mgvdev.io/nestkit) workspaces
+(`@mgvdev/nestkit-*`, per-package `nestkit.json`) — detected automatically. `install` reads
+every project — each application and library — and records them in `nest-boost.json`. The MCP
+then introspects **any application on demand**:
 
 ```jsonc
 // application_info lists them; then target one:
