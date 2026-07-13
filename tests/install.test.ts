@@ -15,8 +15,8 @@ beforeAll(() => {
       name: "temp-app",
       version: "0.0.1",
       dependencies: {
-        "@nestjs/core": "^11.0.0",
-        "@nestjs/common": "^11.0.0",
+        "@nestjs/core": "^12.0.0",
+        "@nestjs/common": "^12.0.0",
         "@nestjs/typeorm": "^10.0.0",
         typeorm: "^0.3.20",
         "class-validator": "^0.14.0",

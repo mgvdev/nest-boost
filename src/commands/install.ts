@@ -4,7 +4,7 @@ import { printBanner } from "../install/banner";
 import { saveConfig, type NestBoostConfig, type ProjectConfig } from "../install/config";
 import { detect, isNestProject, type Detection } from "../install/detect";
 import { findEntryModule, findEntryModuleIn } from "../install/entry";
-import { agentById, AGENTS, MCP_SERVER_KEY, type Agent } from "../install/agents/agent";
+import { agentById, AGENTS, MCP_SERVER_KEY } from "../install/agents/agent";
 import { DEFAULT_ARCHITECTURE } from "../install/architectures";
 import { discoverPackageMcpServers } from "../install/third-party";
 import { authById, defaultAuthFor } from "../install/auth";

@@ -14,7 +14,7 @@ function makeProject(deps: Record<string, string> = {}): string {
   dirs.push(dir);
   writeFileSync(
     join(dir, "package.json"),
-    JSON.stringify({ name: "tl", dependencies: { "@nestjs/core": "^11.0.0", "@nestjs/common": "^11.0.0", ...deps } }),
+    JSON.stringify({ name: "tl", dependencies: { "@nestjs/core": "^12.0.0", "@nestjs/common": "^12.0.0", ...deps } }),
   );
   return dir;
 }

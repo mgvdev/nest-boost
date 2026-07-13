@@ -17,7 +17,7 @@ function makeProject(deps: Record<string, string> = {}): string {
     join(dir, "package.json"),
     JSON.stringify({
       name: "auth-app",
-      dependencies: { "@nestjs/core": "^11.0.0", "@nestjs/common": "^11.0.0", ...deps },
+      dependencies: { "@nestjs/core": "^12.0.0", "@nestjs/common": "^12.0.0", ...deps },
     }),
   );
   return dir;
@@ -45,7 +45,7 @@ describe("auth strategy selection", () => {
 
   test("defaultAuthFor infers strategy from installed packages", () => {
     expect(defaultAuthFor(detect(makeProject({ "better-auth": "^1.0.0" })))).toBe("better-auth");
-    expect(defaultAuthFor(detect(makeProject({ "@nestjs/passport": "^11.0.0" })))).toBe("passport");
+    expect(defaultAuthFor(detect(makeProject({ "@nestjs/passport": "^12.0.0" })))).toBe("passport");
     expect(defaultAuthFor(detect(makeProject()))).toBe("none");
   });
 

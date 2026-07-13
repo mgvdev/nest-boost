@@ -18,17 +18,13 @@ afterEach(() => {
 function makeNestkitWorkspace(): string {
   const root = mkdtempSync(join(tmpdir(), "nest-boost-nk-"));
   dirs.push(root);
-  const w = (p: string, c: string) => {
-    mkdirSync(join(root, p, ".."), { recursive: true });
-    writeFileSync(join(root, p), c);
-  };
 
   writeFileSync(
     join(root, "package.json"),
     JSON.stringify({
       name: "nk-workspace",
       workspaces: ["apps/*", "packages/*"],
-      dependencies: { "@mgvdev/nestkit-cli": "^1.0.0", "@nestjs/core": "^11.0.0", "@nestjs/common": "^11.0.0" },
+      dependencies: { "@mgvdev/nestkit-cli": "^1.0.0", "@nestjs/core": "^12.0.0", "@nestjs/common": "^12.0.0" },
     }),
   );
 

@@ -10,3 +10,4 @@ export const METHOD_METADATA = "method";
 export const GUARDS_METADATA = "__guards__";
 export const INTERCEPTORS_METADATA = "__interceptors__";
 export const PIPES_METADATA = "__pipes__";
+export const ROUTE_ARGS_METADATA = "__routeArguments__";

@@ -27,7 +27,7 @@ function makeProjectWithDep(dep: string, skillRelDir: string, skillName: string,
   dirs.push(root);
   writeFileSync(
     join(root, "package.json"),
-    JSON.stringify({ name: "host", dependencies: { "@nestjs/core": "^11.0.0", "@nestjs/common": "^11.0.0", [dep]: "^1.0.0" } }),
+    JSON.stringify({ name: "host", dependencies: { "@nestjs/core": "^12.0.0", "@nestjs/common": "^12.0.0", [dep]: "^1.0.0" } }),
   );
   const depDir = join(root, "node_modules", ...dep.split("/"));
   mkdirSync(depDir, { recursive: true });
@@ -91,7 +91,7 @@ describe("third-party package skills", () => {
   test("ignores dependencies without a bundled skill", () => {
     const root = mkdtempSync(join(tmpdir(), "nest-boost-tp-"));
     dirs.push(root);
-    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "host", dependencies: { "@nestjs/core": "^11.0.0" } }));
+    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "host", dependencies: { "@nestjs/core": "^12.0.0" } }));
     mkdirSync(join(root, "node_modules/@nestjs/core"), { recursive: true });
     writeFileSync(join(root, "node_modules/@nestjs/core/package.json"), JSON.stringify({ name: "@nestjs/core" }));
     expect(discoverPackageSkills(root)).toEqual([]);
