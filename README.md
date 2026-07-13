@@ -46,7 +46,7 @@ MCP tools, database tools, `evaluate`, guidelines & skills, extending.
 ## Requirements
 
 - [Node.js](https://nodejs.org) `>= 18.18`
-- A NestJS project (`>= 9`) whose `tsconfig.json` has `emitDecoratorMetadata` (the Nest default)
+- A NestJS project (`>= 11`) whose `tsconfig.json` has `emitDecoratorMetadata` (the Nest default)
 - SQLite database tools also work on Node `>= 22` (built-in `node:sqlite`) or with `better-sqlite3`
 
 ## Quick start
@@ -89,7 +89,7 @@ application.
 | Tool | Description |
 | --- | --- |
 | `application_info` | Bun/Node/Nest versions, detected packages, the workspace layout (apps + libraries), and module/controller/provider/route counts |
-| `list_routes` | Every HTTP route: method, path, controller, handler, owning module, and attached guards / interceptors / pipes. Filter by method or path |
+| `list_routes` | Every HTTP route: method, path, controller, handler, owning module, attached guards / interceptors / pipes, and any Standard Schema (Zod/Valibot/ArkType) declared in route decorators. Filter by method or path |
 | `module_graph` | Every module with its controllers, providers (scope + whether exported), imported modules, and exported tokens |
 | `nest_cli` | List and run whitelisted `nest` CLI commands (`generate`, `build`, `info`) |
 | `db_schema` | Read the database schema — SQL tables/columns/keys, or MongoDB collections with sampled fields |
@@ -139,10 +139,10 @@ context lean. nest-boost installs:
 
 - **Baseline** — `nestjs-development`, `nestjs-docs` (authoritative lookups against the
   [official NestJS docs](https://github.com/nestjs/docs.nestjs.com) on GitHub),
-  `testing-jest`, `suites-testing` (fast isolated unit tests with
-  [Suites](https://docs.nestjs.com/recipes/suites), when detected), `using-evaluate`
-  (driving the `evaluate` REPL tool)
-- **Package-gated** — ORMs/ODMs (`typeorm-development`, `prisma-development`, `sequelize-development`, `mikro-orm-development`, `mongoose-development`), plus `graphql-development`, `orpc-development`, … (only when detected)
+  `testing-jest` / `testing-vitest` (the latter for Vitest projects on NestJS 12+),
+  `suites-testing` (fast isolated unit tests with [Suites](https://docs.nestjs.com/recipes/suites), when detected),
+  `using-evaluate` (driving the `evaluate` REPL tool), `oxlint-development` (when oxlint is used)
+- **Package-gated** — ORMs/ODMs (`typeorm-development`, `prisma-development`, `sequelize-development`, `mikro-orm-development`, `mongoose-development`), validation libraries (`zod-development`, `valibot-development`, `arktype-development`), plus `graphql-development`, `orpc-development`, … (only when detected)
 - **Architecture** — `architecture-standard` / `-cqrs` / `-hexagonal`
 - **Auth** — `auth-passport` / `auth-better-auth`
 - **`skill-builder`** — see below
@@ -328,6 +328,7 @@ npx @mgvdev/nest-boost mcp   (run by the agent)
 bun install
 bun test          # unit + real stdio MCP subprocess against a fixture app
 bun run typecheck
+bun run lint      # oxlint
 ```
 
 The test suite boots a fixture NestJS app under `tests/fixtures/sample-app` and exercises

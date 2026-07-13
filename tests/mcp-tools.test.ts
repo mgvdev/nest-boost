@@ -15,7 +15,7 @@ describe("application_info tool", () => {
   test("reports versions, packages, and runtime counts", async () => {
     const info = JSON.parse(await appInfoTool.run({}, ctx));
     expect(info.project.name).toBe("sample-app");
-    expect(info.nest.major).toBe(11);
+    expect(info.nest.major).toBe(12);
     expect(info.runtimeIntrospection.available).toBe(true);
     // AppModule + CatsModule
     expect(info.counts.modules).toBe(2);
@@ -65,6 +65,14 @@ describe("list_routes tool", () => {
     const { routes } = JSON.parse(await routesTool.run({ path: "cats" }, ctx));
     expect(routes.every((r: any) => r.path.includes("cats"))).toBe(true);
     expect(routes).toHaveLength(3);
+  });
+
+  test("exposes Standard Schema metadata on routes", async () => {
+    const { routes } = JSON.parse(await routesTool.run({}, ctx));
+    const create = routes.find((r: any) => r.method === "POST" && r.path === "/cats");
+    expect(create.schemas).toContainEqual({ index: 0, library: "zod" });
+    const findOne = routes.find((r: any) => r.method === "GET" && r.path === "/cats/:id");
+    expect(findOne.schemas).toContainEqual({ index: 0, library: "zod" });
   });
 });
 

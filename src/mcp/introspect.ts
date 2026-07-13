@@ -6,6 +6,7 @@ import {
   METHOD_METADATA,
   PATH_METADATA,
   PIPES_METADATA,
+  ROUTE_ARGS_METADATA,
 } from "./nest-constants";
 
 const scanner = new MetadataScanner();
@@ -40,6 +41,11 @@ export interface ModuleInfo {
   exports: string[];
 }
 
+export interface RouteSchemaInfo {
+  index: number;
+  library: string;
+}
+
 export interface RouteInfo {
   method: string;
   path: string;
@@ -49,6 +55,7 @@ export interface RouteInfo {
   guards: string[];
   interceptors: string[];
   pipes: string[];
+  schemas: RouteSchemaInfo[];
 }
 
 function enhancerNames(metadataKey: string, target: object): string[] {
@@ -66,6 +73,31 @@ function scopeLabel(scope: unknown): ProviderInfo["scope"] {
 function joinPath(base: string, route: string): string {
   const combined = `/${base}/${route}`.replace(/\/+/g, "/").replace(/\/+$/, "");
   return combined === "" ? "/" : combined;
+}
+
+function detectSchemaLibrary(schema: unknown): string {
+  if (!schema || typeof schema !== "object") return "unknown";
+  const standard = (schema as Record<string, unknown>)["~standard"];
+  if (standard && typeof standard === "object" && "vendor" in standard) {
+    return String((standard as { vendor?: unknown }).vendor).toLowerCase();
+  }
+  const ctorName = (schema as { constructor?: { name?: string } }).constructor?.name;
+  if (ctorName?.startsWith("Zod") || ctorName === "ZodType") return "zod";
+  if (ctorName?.toLowerCase().includes("valibot")) return "valibot";
+  if (ctorName?.toLowerCase().includes("arktype")) return "arktype";
+  return "unknown";
+}
+
+function collectRouteSchemas(handler: unknown, cls: new (...args: any[]) => unknown, methodName: string): RouteSchemaInfo[] {
+  const metadata: Record<string, { index: number; schema?: unknown }> =
+    Reflect.getMetadata(ROUTE_ARGS_METADATA, cls, methodName) ?? {};
+  const schemas: RouteSchemaInfo[] = [];
+  for (const entry of Object.values(metadata)) {
+    if (entry?.schema) {
+      schemas.push({ index: entry.index, library: detectSchemaLibrary(entry.schema) });
+    }
+  }
+  return schemas;
 }
 
 function userModules(modules: ModulesContainer) {
@@ -134,6 +166,7 @@ export function collectRoutes(modules: ModulesContainer): RouteInfo[] {
           guards: [...classGuards, ...enhancerNames(GUARDS_METADATA, handler)],
           interceptors: [...classInterceptors, ...enhancerNames(INTERCEPTORS_METADATA, handler)],
           pipes: [...classPipes, ...enhancerNames(PIPES_METADATA, handler)],
+          schemas: collectRouteSchemas(handler, cls, methodName),
         });
       }
     }

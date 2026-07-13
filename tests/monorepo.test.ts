@@ -121,7 +121,7 @@ describe("config migration + install shape", () => {
   test("install writes projects + defaultProject and the monorepo guideline", () => {
     writeFileSync(
       join(dir, "package.json"),
-      JSON.stringify({ name: "m", dependencies: { "@nestjs/core": "^11.0.0", "@nestjs/common": "^11.0.0" } }),
+      JSON.stringify({ name: "m", dependencies: { "@nestjs/core": "^12.0.0", "@nestjs/common": "^12.0.0" } }),
     );
     writeFileSync(
       join(dir, "nest-cli.json"),

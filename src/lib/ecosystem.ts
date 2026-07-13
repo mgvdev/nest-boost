@@ -108,6 +108,27 @@ export const ECOSYSTEM: EcosystemEntry[] = [
     guideline: "queues.md",
   },
   {
+    id: "zod",
+    label: "Zod (Standard Schema)",
+    match: ["zod"],
+    guideline: "validation.md",
+    skill: "zod-development",
+  },
+  {
+    id: "valibot",
+    label: "Valibot (Standard Schema)",
+    match: ["valibot"],
+    guideline: "validation.md",
+    skill: "valibot-development",
+  },
+  {
+    id: "arktype",
+    label: "ArkType (Standard Schema)",
+    match: ["arktype"],
+    guideline: "validation.md",
+    skill: "arktype-development",
+  },
+  {
     id: "validation",
     label: "Validation",
     match: ["class-validator", "class-transformer"],
@@ -119,6 +140,18 @@ export const ECOSYSTEM: EcosystemEntry[] = [
     match: ["@nestjs/testing", "jest", "vitest"],
     guideline: "testing.md",
     skill: "testing-jest",
+  },
+  {
+    id: "vitest",
+    label: "Vitest",
+    match: ["vitest"],
+    skill: "testing-vitest",
+  },
+  {
+    id: "oxlint",
+    label: "oxlint",
+    match: ["oxlint"],
+    skill: "oxlint-development",
   },
   {
     id: "suites",

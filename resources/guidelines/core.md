@@ -19,9 +19,12 @@ own a slice of the domain and expose only what other modules need.
 - Controllers are thin: validate input, delegate to a service, return the result. No business logic.
 - Group routes with a base path: `@Controller('cats')`. Use method decorators `@Get(':id')`, `@Post()`, etc.
 - Read params with `@Param`, `@Query`, `@Body`; never touch `req`/`res` unless you must.
+- On NestJS 12+, you may pass a Standard Schema to route decorators:
+  `@Post() create(@Body({ schema: createCatSchema }) dto: CreateCatDto)`.
+  Use this for Zod, Valibot, or ArkType; `class-validator` remains the default recommended path.
 
 ### DTOs & validation
-- Define request shapes as DTO classes with `class-validator` decorators.
+- Define request shapes as DTO classes with `class-validator` decorators, **or** as Standard Schema objects when the project chose that style.
 - Enable a global `ValidationPipe` (`whitelist: true, transform: true`) so payloads are validated and stripped.
 
 ### Cross-cutting concerns
@@ -31,6 +34,11 @@ own a slice of the domain and expose only what other modules need.
 ### Async & config
 - Keep configuration in `@nestjs/config`; read via `ConfigService`, not `process.env` scattered through code.
 - Services return `Promise`/`Observable`; let Nest await them.
+
+### Build & quality
+- NestJS 12 is ESM-first. Prefer ESM `import` syntax and review `tsconfig.json` module/moduleResolution settings.
+- New ESM projects default to **Vitest** and **oxlint**. Existing Jest/eslint setups continue to work, but fresh projects should adopt the new defaults.
+- The CLI build pipeline uses **Rspack** instead of webpack. Audit custom webpack plugins when upgrading.
 
 ### Before generating code
 Use the `nest-boost` MCP tools to ground your work in the real app:

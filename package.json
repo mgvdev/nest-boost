@@ -25,7 +25,8 @@
     "build": "bun build ./src/cli.ts --target=node --format=esm --packages=external --outdir=dist && bun run scripts/postbuild.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "bun run build && bun run typecheck && bun test"
+    "lint": "oxlint",
+    "prepublishOnly": "bun run build && bun run typecheck && bun run lint && bun test"
   },
   "publishConfig": {
     "access": "public"
@@ -48,8 +49,8 @@
     "tsx": "^4.19.0"
   },
   "peerDependencies": {
-    "@nestjs/common": ">=9.0.0",
-    "@nestjs/core": ">=9.0.0",
+    "@nestjs/common": ">=11.0.0",
+    "@nestjs/core": ">=11.0.0",
     "better-sqlite3": ">=8.0.0"
   },
   "peerDependenciesMeta": {
@@ -64,12 +65,14 @@
     }
   },
   "devDependencies": {
-    "@nestjs/common": "^11.0.0",
-    "@nestjs/core": "^11.0.0",
-    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/common": "next",
+    "@nestjs/core": "next",
+    "@nestjs/platform-express": "next",
     "@types/bun": "latest",
+    "oxlint": "^0.16.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "zod": "^4.4.3"
   }
 }

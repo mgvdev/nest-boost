@@ -12,7 +12,7 @@ function makeProject(deps: Record<string, string>): string {
     join(dir, "package.json"),
     JSON.stringify({
       name: "orm-app",
-      dependencies: { "@nestjs/core": "^11.0.0", "@nestjs/common": "^11.0.0", ...deps },
+      dependencies: { "@nestjs/core": "^12.0.0", "@nestjs/common": "^12.0.0", ...deps },
     }),
   );
   return dir;

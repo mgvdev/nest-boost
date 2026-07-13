@@ -17,9 +17,9 @@ describe("detect", () => {
   });
 
   test("resolves the installed @nestjs/core version and major", () => {
-    // The fixture resolves nest from the repo's installed node_modules (v11).
-    expect(result.nest?.major).toBe(11);
-    expect(result.nest?.version).toMatch(/^11\./);
+    // The fixture resolves nest from the repo's installed node_modules (v12).
+    expect(result.nest?.major).toBe(12);
+    expect(result.nest?.version).toMatch(/^12\./);
   });
 
   test("detects the ecosystem entries present in the manifest", () => {
@@ -29,6 +29,7 @@ describe("detect", () => {
     expect(ids).toContain("typeorm");
     expect(ids).toContain("validation");
     expect(ids).toContain("testing");
+    expect(ids).toContain("zod");
   });
 
   test("does not detect packages that are absent", () => {

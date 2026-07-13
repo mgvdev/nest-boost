@@ -65,6 +65,7 @@ function textLine(r: RouteInfo): string {
     r.guards.length ? `guards:${r.guards.join(",")}` : "",
     r.interceptors.length ? `int:${r.interceptors.join(",")}` : "",
     r.pipes.length ? `pipes:${r.pipes.join(",")}` : "",
+    r.schemas.length ? `schemas:${r.schemas.map((s) => `${s.index}=${s.library}`).join(",")}` : "",
   ]
     .filter(Boolean)
     .join(" ");

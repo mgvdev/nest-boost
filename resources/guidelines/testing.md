@@ -1,6 +1,9 @@
-## Testing (Jest + @nestjs/testing)
+## Testing
 
-- Unit-test providers by building a testing module and overriding dependencies:
+NestJS 12 defaults to **Vitest** for new ESM projects and keeps **Jest** for CJS schematics. Use the test runner already configured in the project.
+
+### Unit tests
+- Build a testing module and override dependencies:
 
 ```ts
 const moduleRef = await Test.createTestingModule({
@@ -10,7 +13,17 @@ const service = moduleRef.get(CatsService);
 ```
 
 - Prefer `.overrideProvider(X).useValue(mock)` to swap real dependencies for fakes.
-- E2E-test HTTP with `supertest` against a booted app from `createNestApplication()`; assert status + body.
-- One behaviour per test; name tests by the behaviour, not the method.
 - Mock at the boundary (repositories, HTTP clients), not the unit under test.
-- Run with `bun test` or `jest`; keep tests deterministic (no real network/DB).
+
+### E2E tests
+- Boot the app with `createNestApplication()` and use an HTTP client (e.g. `supertest`) to assert status + body.
+- With Vitest, prefer `testcontainers` or in-memory fakes; keep tests deterministic (no real network/DB).
+
+### Conventions
+- One behaviour per test; name tests by the behaviour, not the method.
+- Reset mocks between tests (`afterEach` / `vi.clearAllMocks()` / `jest.clearAllMocks()` depending on the runner).
+- Place tests per the project's **test-layout** convention.
+
+### Run
+- Jest projects: `jest` or `bun test`.
+- Vitest projects: `vitest` or `bun test` when configured with Bun's Vitest runner.
